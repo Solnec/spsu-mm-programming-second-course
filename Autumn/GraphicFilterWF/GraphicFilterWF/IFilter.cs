@@ -1,7 +1,5 @@
 ﻿
-using GraphicFilterWF;
-
-namespace GraphicFilters
+namespace GraphicFiltersWF
 {
     interface IFilter
     {

@@ -1,5 +1,5 @@
 ﻿
-namespace GraphicFilters
+namespace GraphicFiltersWF
 {
     static class ConvolutionMatrix
     {

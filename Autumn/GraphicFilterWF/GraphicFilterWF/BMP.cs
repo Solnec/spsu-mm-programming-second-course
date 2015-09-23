@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphicFilterWF
 {
-    class BMP
+    public class BMP
     {
         public struct Pixel
         {

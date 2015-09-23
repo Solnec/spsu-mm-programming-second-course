@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GraphicFilters
+namespace GraphicFiltersWF
 {
     class Mean : IFilter
     {
