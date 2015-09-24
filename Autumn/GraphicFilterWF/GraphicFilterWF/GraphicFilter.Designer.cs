@@ -37,6 +37,7 @@
             this.bntSave = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pnlManage = new System.Windows.Forms.Panel();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.pnlManage.SuspendLayout();
             this.SuspendLayout();
@@ -114,6 +115,7 @@
             this.bntSave.TabIndex = 7;
             this.bntSave.Text = "Save";
             this.bntSave.UseVisualStyleBackColor = true;
+            this.bntSave.Click += new System.EventHandler(this.bntSave_Click);
             // 
             // openFileDialog
             // 
@@ -163,6 +165,7 @@
         private System.Windows.Forms.Button bntSave;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.Panel pnlManage;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }
 

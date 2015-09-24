@@ -12,6 +12,17 @@ namespace GraphicFilterWF
         private BMP _newImage = null;
         private IFilter _filter = null;
 
+        public int Size
+        {
+            get;
+            private set;
+        }
+        public IProgress Progress
+        {
+            get;
+            private set;
+        }
+
         public string InPath { get; set; }
         public string OutPath { get; set; }
 
@@ -73,6 +84,7 @@ namespace GraphicFilterWF
         public void Load()
         {
             _myImage = new BMP(InPath);
+            Size = _myImage.BiHeight * _myImage.BiWidth;
         }
 
 
@@ -80,6 +92,7 @@ namespace GraphicFilterWF
         {
             if (!TryChangeFilter(Filter, out _filter))
                 return;
+            Progress = (IProgress)_filter;
             if (_filter != null)
             {
                 _newImage = _filter.ApplyFilter(_myImage);

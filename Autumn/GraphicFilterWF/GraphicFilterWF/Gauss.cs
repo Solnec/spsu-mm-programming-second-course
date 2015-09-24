@@ -1,7 +1,7 @@
 ﻿
 namespace GraphicFilterWF
 {
-    class Gauss : IFilter
+    class Gauss : IFilter, IProgress
     {
         private static double[,] _gaussMatrix = 
         {
@@ -21,9 +21,16 @@ namespace GraphicFilterWF
                 for (int j = 0; j < image.BiWidth; j++)
                 {
                     ApplyMatrix(i, j, image, newImage);
+                    Progress++;
                 }
             }
             return newImage;
+        }
+
+        public int Progress
+        {
+            get;
+            private set;
         }
 
         private void ApplyMatrix(int col, int row, BMP image, BMP newImage)

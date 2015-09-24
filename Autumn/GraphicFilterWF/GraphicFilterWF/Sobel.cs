@@ -2,7 +2,7 @@
 
 namespace GraphicFilterWF
 {
-    class Sobel : IFilter
+    class Sobel : IFilter, IProgress
     {
         private static int[,] _sobelXMatrix = 
         {
@@ -25,6 +25,7 @@ namespace GraphicFilterWF
         }
         public BMP ApplyFilter(BMP image)
         {
+            double progress = 0;
             BMP newImage = new BMP(image);
 
             int[,] intensity = new int[image.BiHeight, image.BiWidth];
@@ -34,6 +35,8 @@ namespace GraphicFilterWF
                 for (int j = 0; j < image.BiWidth; j++)
                 {
                     intensity[i, j] = (image.Сolors[i, j].R + image.Сolors[i, j].G + image.Сolors[i, j].B) / 3;
+                    progress+= 0.5;
+                    Progress = (int) progress;
                 }
             }
 
@@ -42,9 +45,17 @@ namespace GraphicFilterWF
                 for (int j = 0; j < image.BiWidth; j++)
                 {
                     ApplyMatrix(i, j, intensity, newImage);
+                    progress += 0.5;
+                    Progress = (int)progress;
                 }
             }
             return newImage;
+        }
+
+        public int Progress
+        {
+            get;
+            private set;
         }
 
         private void ApplyMatrix(int col, int row, int[,] image, BMP newImage)
