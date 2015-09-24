@@ -1,5 +1,5 @@
 ﻿
-namespace GraphicFilters
+namespace GraphicFilterWF
 {
     class Gauss : IFilter
     {

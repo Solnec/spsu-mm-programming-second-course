@@ -3,31 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GraphicFilters;
 
 namespace GraphicFilterWF
 {
-    class FilterModel
+    public class FilterModel
     {
         private BMP _myImage = null;
         private BMP _newImage = null;
-        private int _filt;
         private IFilter _filter = null;
+
+        public string InPath { get; set; }
+        public string OutPath { get; set; }
 
         public Filters Filter { get; set; }
 
         public List<string> FilterList = new List<string>
         {
-            "Mean3x3;",
-            "Mean5x5;",
-            "Greyscale;",
-            "Gauss;",
-            "SobelX;",
-            "SobelY;",
-            "Sobel."
+            "Mean3x3",
+            "Mean5x5",
+            "Greyscale",
+            "Gauss",
+            "SobelX",
+            "SobelY",
+            "Sobel"
         };
 
-        internal enum Filters
+        public enum Filters
         {
             Mean3x3,
             Mean5x5,
@@ -69,31 +70,26 @@ namespace GraphicFilterWF
             }
         }
 
-        public void Load(string path)
+        public void Load()
         {
-            _myImage = new BMP(path);
+            _myImage = new BMP(InPath);
         }
 
-        public void ChooseFilter(string filter)
-        {
-            if ((Int32.TryParse(filter, out _filt) && TryChangeFilter((Filters)_filt, out _filter)))
-            {
-
-            }
-        }
 
         public void Apply()
         {
+            if (!TryChangeFilter(Filter, out _filter))
+                return;
             if (_filter != null)
             {
                 _newImage = _filter.ApplyFilter(_myImage);
-                BMP.BMPInFile(_newImage, _filt.ToString()); 
+                BMP.BMPInFile(_newImage, Filter.ToString());
             }
         }
 
-        public void Save(string path)
+        public void Save()
         {
-            BMP.BMPInFile(_newImage, path); 
+            BMP.BMPInFile(_newImage, OutPath);
         }
     }
 }

@@ -112,7 +112,7 @@ namespace GraphicFilterWF
             _biClrUsed = image._biClrUsed;
             _biClrImportant = image._biClrImportant;
 
-            Сolors = image.Сolors;
+            Сolors = (Pixel[,])image.Сolors.Clone();
         }
 
         public static void BMPInFile(BMP image, string adress)
