@@ -1,7 +1,9 @@
 ﻿
+using System.Drawing;
+
 namespace GraphicFilterWF
 {
-    class Gauss : IFilter, IProgress
+    class Gauss : IFilter
     {
         private static double[,] _gaussMatrix = 
         {
@@ -12,13 +14,13 @@ namespace GraphicFilterWF
             { 0.000789, 0.006581, 0.013347, 0.006581, 0.000789}
         };
 
-        public BMP ApplyFilter(BMP image)
+        public Bitmap ApplyFilter(Bitmap image)
         {
-            BMP newImage = new BMP(image);
+            Bitmap newImage = new Bitmap(image);
 
-            for (int i = 0; i < image.BiHeight; i++)
+            for (int i = 0; i < image.Width; i++)
             {
-                for (int j = 0; j < image.BiWidth; j++)
+                for (int j = 0; j < image.Height; j++)
                 {
                     ApplyMatrix(i, j, image, newImage);
                     Progress++;
@@ -33,7 +35,7 @@ namespace GraphicFilterWF
             private set;
         }
 
-        private void ApplyMatrix(int col, int row, BMP image, BMP newImage)
+        private void ApplyMatrix(int col, int row, Bitmap image, Bitmap newImage)
         {
             double sumR = 0;
             double sumG = 0;
@@ -46,17 +48,16 @@ namespace GraphicFilterWF
                     int X = col + ConvolutionMatrix.GetX5x5(i, j);
                     int Y = row + ConvolutionMatrix.GetY5x5(i, j);
 
-                    if (X >= 0 && Y >= 0 && X < image.BiHeight && Y < image.BiWidth)
+                    if (X >= 0 && Y >= 0 && X < image.Width && Y < image.Height)
                     {
-                        sumR += (image.Сolors[X, Y].R * _gaussMatrix[i, j]);
-                        sumG += (image.Сolors[X, Y].G * _gaussMatrix[i, j]);
-                        sumB += (image.Сolors[X, Y].B * _gaussMatrix[i, j]);
+                        sumR += (image.GetPixel(X, Y).R * _gaussMatrix[i, j]);
+                        sumG += (image.GetPixel(X, Y).G * _gaussMatrix[i, j]);
+                        sumB += (image.GetPixel(X, Y).B * _gaussMatrix[i, j]);
                     }
                 }
             }
-            newImage.Сolors[col, row].R = (byte)(sumR);
-            newImage.Сolors[col, row].G = (byte)(sumG);
-            newImage.Сolors[col, row].B = (byte)(sumB);
+
+            newImage.SetPixel(col, row, Color.FromArgb((byte)sumR, (byte)sumG, (byte)sumB));
         }
     }
 }

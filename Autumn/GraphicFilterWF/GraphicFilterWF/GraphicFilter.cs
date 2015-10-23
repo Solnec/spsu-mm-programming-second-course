@@ -26,14 +26,12 @@ namespace GraphicFilterWF
             model.Filter = (FilterModel.Filters)cmbFilters.SelectedIndex;
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private async void btnLoad_Click(object sender, EventArgs e)
         {
             openFileDialog.ShowDialog();
             model.InPath = openFileDialog.FileName;
-            pictureBox.ImageLocation = model.InPath;
-            pictureBox.Load();
-            Thread t = new Thread(model.Load);
-            t.Start();
+            model.Load();
+            pictureBox.Image = model.OldImage();
         }
 
         private void btnApply_Click(object sender, EventArgs e)
@@ -48,21 +46,19 @@ namespace GraphicFilterWF
 
         private void ShowImage()
         {
-            model.OutPath = model.Filter.ToString() + ".bmp";
-            model.Save();
-            pictureBox.ImageLocation = model.OutPath;
-            pictureBox.Load();
+            pictureBox.Image = model.NewImage();
         }
 
         private void ShowProgress()
         {
-            Thread.Sleep(10);
+            model.Mut.WaitOne();
             while (progressBar.Value != progressBar.Maximum)
             {
-                this.Invoke(new ThreadStart(delegate { progressBar.Value = model.Progress.Progress; }));
-                Thread.Sleep(100);
+                this.Invoke(new ThreadStart(delegate { progressBar.Value = model.Progress(); }));
+                Thread.Sleep(0);
             }
             ShowImage();
+            model.Mut.ReleaseMutex();
         }
 
         private void bntSave_Click(object sender, EventArgs e)
@@ -71,8 +67,7 @@ namespace GraphicFilterWF
             model.OutPath = saveFileDialog.FileName;
             model.Save();
             model.OutPath = model.InPath;
-            pictureBox.ImageLocation = model.InPath;
-            pictureBox.Load();
+            pictureBox.Image = model.OldImage();
         }
     }
 }

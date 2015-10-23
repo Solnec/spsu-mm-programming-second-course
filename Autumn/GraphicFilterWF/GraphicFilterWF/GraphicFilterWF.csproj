@@ -44,7 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BMP.cs" />
     <Compile Include="ConvolutionMatrix.cs" />
     <Compile Include="FilterModel.cs" />
     <Compile Include="Gauss.cs" />
@@ -56,7 +55,6 @@
     </Compile>
     <Compile Include="Greyscale.cs" />
     <Compile Include="IFilter.cs" />
-    <Compile Include="IProgress.cs" />
     <Compile Include="Mean.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,26 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GraphicFilterWF
 {
     public class FilterModel
     {
-        private BMP _myImage = null;
-        private BMP _newImage = null;
-        private IFilter _filter = null;
+        private Bitmap _myImage = null;
+        private Bitmap _newImage = null;
 
+        public Bitmap OldImage()
+        {
+            return _myImage;
+        }
+
+        public Bitmap NewImage()
+        {
+            return _newImage;
+        }
+
+        private IFilter _filter = null;
+        public Mutex Mut = new Mutex();
         public int Size
         {
             get;
             private set;
         }
-        public IProgress Progress
+        public int Progress()
         {
-            get;
-            private set;
+            if (_filter == null)
+            {
+                TryChangeFilter(Filter, out _filter);
+            }
+            return _filter.Progress;
         }
 
         public string InPath { get; set; }
@@ -83,26 +99,26 @@ namespace GraphicFilterWF
 
         public void Load()
         {
-            _myImage = new BMP(InPath);
-            Size = _myImage.BiHeight * _myImage.BiWidth;
+            _myImage = new Bitmap(InPath);
+            Size = _myImage.Height * _myImage.Width;
         }
 
 
         public void Apply()
         {
+            Mut.WaitOne();
             if (!TryChangeFilter(Filter, out _filter))
                 return;
-            Progress = (IProgress)_filter;
+            Mut.ReleaseMutex();
             if (_filter != null)
             {
                 _newImage = _filter.ApplyFilter(_myImage);
-                BMP.BMPInFile(_newImage, Filter.ToString());
             }
         }
 
         public void Save()
         {
-            BMP.BMPInFile(_newImage, OutPath);
+            _newImage.Save(OutPath);
         }
     }
 }
