@@ -31,6 +31,7 @@ namespace Filters
 
         int idim;
         int dim;
+        public bool err = false;
 
         public bool IsAlive = false;
         public int Progress = 0;
@@ -141,89 +142,117 @@ namespace Filters
                         break;
                     }
             }
-            WriteImage(AddressWrite, Image, autoreset);
+            WriteImage(AddressWrite, newImage, autoreset);
             IsAlive = false;
             autoreset.Set();
         }
 
         public MyBitmap ReadImage(string path)
         {
-            MyBitmap Image = new MyBitmap();
-
-            FileInfo f = new FileInfo(path);
-
-            BinaryReader br = new BinaryReader(f.OpenRead());
-
-            Image.iType = br.ReadUInt16();
-            Image.Size = br.ReadUInt32();
-            Image.Reserved1 = br.ReadUInt16();
-            Image.Reserved2 = br.ReadUInt16();
-            Image.OffBits = br.ReadUInt32();
-
-            Image.ISize = br.ReadUInt32();
-            Image.Width = br.ReadInt32();
-            Image.Height = br.ReadInt32();
-            Image.Planes = br.ReadUInt16();
-            Image.BitCount = br.ReadUInt16();
-            Image.Compression = br.ReadUInt32();
-            Image.SizeImage = br.ReadUInt32();
-            Image.XPixForMtr = br.ReadInt32();
-            Image.YPixForMtp = br.ReadInt32();
-            Image.CtlUsed = br.ReadUInt32();
-            Image.ClrImportant = br.ReadUInt32();
-
-            Image.colors = new MyBitmap.tagRGBQUAD[Image.Height, Image.Width];
-
-            for (int i = 0; i < Image.Height; i++)
+            try
             {
-                for (int j = 0; j < Image.Width; j++)
+                MyBitmap Image = new MyBitmap();
+                FileStream f = new FileStream(path, FileMode.Open, FileAccess.Read);
+                BinaryReader br = new BinaryReader(f);
+
+                Image.iType = br.ReadUInt16();
+                Image.Size = br.ReadUInt32();
+                Image.Reserved1 = br.ReadUInt16();
+                Image.Reserved2 = br.ReadUInt16();
+                Image.OffBits = br.ReadUInt32();
+
+                Image.ISize = br.ReadUInt32();
+                Image.Width = br.ReadInt32();
+                Image.Height = br.ReadInt32();
+                Image.Planes = br.ReadUInt16();
+                Image.BitCount = br.ReadUInt16();
+                Image.Compression = br.ReadUInt32();
+                Image.SizeImage = br.ReadUInt32();
+                Image.XPixForMtr = br.ReadInt32();
+                Image.YPixForMtp = br.ReadInt32();
+                Image.CtlUsed = br.ReadUInt32();
+                Image.ClrImportant = br.ReadUInt32();
+
+                Image.colors = new MyBitmap.tagRGBQUAD[Image.Height, Image.Width];
+
+                for (int i = 0; i < Image.Height; i++)
                 {
-                    Image.colors[i, j].rgbRed = br.ReadByte();
-                    Image.colors[i, j].rgbGreen = br.ReadByte();
-                    Image.colors[i, j].rgbBlue = br.ReadByte();
+                    for (int j = 0; j < Image.Width; j++)
+                    {
+                        Image.colors[i, j].rgbRed = br.ReadByte();
+                        Image.colors[i, j].rgbGreen = br.ReadByte();
+                        Image.colors[i, j].rgbBlue = br.ReadByte();
+                    }
+                    f.Seek(Image.Width % 4, SeekOrigin.Current);
                 }
+
+                br.Close();
+
+                return Image;
             }
-
-            br.Close();
-
-            return Image;
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
-        private void WriteImage(string path, MyBitmap Image, AutoResetEvent autoreset)
+        private void WriteImage(string path, MyBitmap newImage, AutoResetEvent autoreset)
         {
-            DirectoryInfo di = new DirectoryInfo(path);
-            FileInfo f2 = new FileInfo(path);
-            BinaryWriter bw = new BinaryWriter(f2.OpenWrite());
-
-            bw.Write(Image.iType);
-            bw.Write(Image.Size);
-            bw.Write(Image.Reserved1);
-            bw.Write(Image.Reserved2);
-            bw.Write(Image.OffBits);
-
-            bw.Write(Image.ISize);
-            bw.Write(Image.Width);
-            bw.Write(Image.Height);
-            bw.Write(Image.Planes);
-            bw.Write(Image.BitCount);
-            bw.Write(Image.Compression);
-            bw.Write(Image.SizeImage);
-            bw.Write(Image.XPixForMtr);
-            bw.Write(Image.YPixForMtp);
-            bw.Write(Image.CtlUsed);
-            bw.Write(Image.ClrImportant);
-
-            for (int i = 0; i < Image.Height; i++)
+            try
             {
-                for (int j = 0; j < Image.Width; j++)
+                DirectoryInfo di = new DirectoryInfo(path);
+                FileInfo f2 = new FileInfo(path);
+                BinaryWriter bw = new BinaryWriter(f2.OpenWrite());
+
+                bw.Write(newImage.iType);
+                bw.Write(newImage.Size);
+                bw.Write(newImage.Reserved1);
+                bw.Write(newImage.Reserved2);
+                bw.Write(newImage.OffBits);
+
+                bw.Write(newImage.ISize);
+                bw.Write(newImage.Width);
+                bw.Write(newImage.Height);
+                bw.Write(newImage.Planes);
+                bw.Write(newImage.BitCount);
+                bw.Write(newImage.Compression);
+                bw.Write(newImage.SizeImage);
+                bw.Write(newImage.XPixForMtr);
+                bw.Write(newImage.YPixForMtp);
+                bw.Write(newImage.CtlUsed);
+                bw.Write(newImage.ClrImportant);
+
+                for (int i = 0; i < newImage.Height; i++)
                 {
-                    bw.Write(Image.colors[i, j].rgbRed);
-                    bw.Write(Image.colors[i, j].rgbGreen);
-                    bw.Write(Image.colors[i, j].rgbBlue);
+                    for (int j = 0; j < newImage.Width; j++)
+                    {
+                        bw.Write(newImage.colors[i, j].rgbRed);
+                        bw.Write(newImage.colors[i, j].rgbGreen);
+                        bw.Write(newImage.colors[i, j].rgbBlue);
+                    }
+                    ProgressIncr(autoreset);
                 }
-                ProgressIncr(autoreset);
+
+                for (int i = 0; i < newImage.Width % 4; i++)
+                {
+                    bw.Write((byte)0);
+                }
+
+                bw.Close();
+                Image = newImage;
+                autoreset.Set();
             }
-            bw.Close();
+            catch (Exception)
+            {
+                IsAlive = false;
+                autoreset.Set();
+                err = true;
+            }
+        }
+
+        private int Reserved()
+        {
+            return ((4 - (3 * Image.Width % 4)) % 4);
         }
 
         private void Mean(int col, int row, MyBitmap Image, MyBitmap newImage)
@@ -313,7 +342,7 @@ namespace Filters
                 { -2, 0, 2},
                 { -1, 0, 1},
                 };
-        
+
         private int fil;
 
         private void Sobel(MyBitmap Image, MyBitmap newImage, AutoResetEvent autoreset)

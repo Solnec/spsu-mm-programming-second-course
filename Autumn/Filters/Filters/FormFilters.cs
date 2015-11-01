@@ -17,8 +17,8 @@ namespace Filters
         int newValue = 0;
         Thread thread, thread1;
         string AddressWrite, AddressRead;
-
         delegate void Proc();
+
         Filters filter = new Filters();
         AutoResetEvent autoreset = new AutoResetEvent(false);
 
@@ -36,16 +36,18 @@ namespace Filters
             }
 
             filter.Image = filter.ReadImage(AddressRead);
+            if (filter.Image == null)
+            {
+                MessageBox.Show("Ошибка при считывании картинки :(");
+                return;
+            }
+            pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox.Load(AddressRead);
         }
 
         private void Load_Button_Click(object sender, EventArgs e)
         {
-            if (thread != null)
-                thread.Abort();
-            if (thread1 != null)
-                thread1.Abort();
-
+            autoreset.Reset();
             progressBar1.Value = newValue = 0;
             FileDialog.Filter = "Изображения |*.bmp";
             FileDialog.FileName = "";
@@ -55,11 +57,12 @@ namespace Filters
 
             Thread load = new Thread(delegate() { LoadImage(AddressRead); });
             load.Start();
+            load.IsBackground = true;
         }
 
         private void Filter_Button_Click(object sender, EventArgs e)
         {
-            thread = thread1 = null;
+            autoreset.Reset();
             saveFile.Filter = "Изображения |*.bmp";
             saveFile.FileName = null;
             progressBar1.Value = newValue = filter.Progress = 0;
@@ -77,18 +80,16 @@ namespace Filters
 
             thread = new Thread(delegate() { filter.Filter(index, AddressWrite, autoreset); });
             thread.Start();
+            thread.IsBackground = true;
 
             thread1 = new Thread(delegate() { Process(Max); });
             thread1.Start();
+            thread.IsBackground = true;
         }
 
         private void FiltersList_SelectedIndexChanged(object sender, EventArgs e)
         {
             progressBar1.Value = newValue = filter.Progress = 0;
-            if (thread != null)
-                thread.Abort();
-            if (thread1 != null)
-                thread1.Abort();
         }
 
         private void Process(int Max)
@@ -112,20 +113,27 @@ namespace Filters
 
             autoreset.WaitOne();
 
-            if (this.InvokeRequired)
+            if (filter.err)
             {
-                this.Invoke(new Proc(delegate() { this.pictureBox.Load(AddressWrite); }));
+                MessageBox.Show("Ошибка записи");
+                return;
             }
-            else
-                this.pictureBox.Load(AddressWrite);
-        }
 
-        private void FormFilters_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            if (thread != null)
-                thread.Abort();
-            if (thread1 != null)
-                thread1.Abort();
+            try
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Proc(delegate() { this.pictureBox.Load(AddressWrite); }));
+                }
+                else
+                    this.pictureBox.Load(AddressWrite);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка вывода:(");
+                return;
+            }
+
         }
     }
 }

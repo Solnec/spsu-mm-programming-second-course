@@ -42,7 +42,7 @@
             // 
             this.pictureBox.Location = new System.Drawing.Point(22, 12);
             this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(584, 343);
+            this.pictureBox.Size = new System.Drawing.Size(560, 343);
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
             // 
@@ -109,7 +109,6 @@
             this.Controls.Add(this.pictureBox);
             this.Name = "FormFilters";
             this.Text = "Графические фильтры";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormFilters_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
 
