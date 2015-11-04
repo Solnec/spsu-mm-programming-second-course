@@ -38,7 +38,7 @@ namespace Filters
             filter.Image = filter.ReadImage(AddressRead);
             if (filter.Image == null)
             {
-                MessageBox.Show("Ошибка при считывании картинки :(");
+                MessageBox.Show("Ошибка при считывании картинки");
                 return;
             }
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -130,7 +130,7 @@ namespace Filters
             }
             catch (Exception)
             {
-                MessageBox.Show("Ошибка вывода:(");
+                MessageBox.Show("Ошибка вывода");
                 return;
             }
 

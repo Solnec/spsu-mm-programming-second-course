@@ -250,11 +250,6 @@ namespace Filters
             }
         }
 
-        private int Reserved()
-        {
-            return ((4 - (3 * Image.Width % 4)) % 4);
-        }
-
         private void Mean(int col, int row, MyBitmap Image, MyBitmap newImage)
         {
             byte count = 0;
