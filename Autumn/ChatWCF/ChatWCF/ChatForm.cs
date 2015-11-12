@@ -24,13 +24,13 @@ namespace ChatWCF
         {
             if (Nick.Text == "")
             {
-                MessageBox.Show("Введите свой ник! )");
+                MessageBox.Show("Введите свой ник!");
                 return;
             }
 
             if (((IPFriend.Text == "") ^ (PortFriend.Text == "")) && (Port.Text != ""))
             {
-                MessageBox.Show("Введите IP и порт друга или начните диалог");
+                MessageBox.Show("Введите IP и порт друга или начните новую беседу");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace ChatWCF
 
             if (enter == "!")
             {
-                MessageBox.Show("Ошибка при попытке подключения, попробуйте еще раз");
+                MessageBox.Show("Ошибка при попытке подключения, попробуйте еще раз!");
                 return;
             }
 
@@ -46,7 +46,7 @@ namespace ChatWCF
             richTextBox2.Visible = true;
             buttonSend.Visible = true;
 
-            Thread thread1 = new Thread(delegate() { Reading(MyService.Reset); });
+            Thread thread1 = new Thread(delegate() { Reading(net.serv.Reset); });
             thread1.Start();
             thread1.IsBackground = true;
 
@@ -66,21 +66,19 @@ namespace ChatWCF
             while (true)
             {
                 reset.WaitOne();
-                if (!string.IsNullOrEmpty(MyService.MessageFrom))
-                    if (MyService.MessageFrom[0] == '!')
+                if (!string.IsNullOrEmpty(net.serv.MessageFrom))
+                    if (net.serv.MessageFrom[0] == '!')
                     {
-                        MyService.MessageFrom = MyService.MessageFrom.Remove(0, 1);
-                        string NickFriend = MyService.MessageFrom.Remove(0, MyService.MessageFrom.IndexOf('*') + 1);
-                        string AddressFriend = MyService.MessageFrom.Remove(MyService.MessageFrom.IndexOf('*'));
+                        net.serv.MessageFrom = net.serv.MessageFrom.Remove(0, 1);
+                        string AddressFriend = net.serv.MessageFrom;
                         net.DeleteFriend(AddressFriend);
-                        MyService.MessageFrom = NickFriend + " нас покидает :(";
                     }
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Proc(delegate() { richTextBox2.Text += ("\n" + MyService.MessageFrom); }));
+                    this.Invoke(new Proc(delegate() { richTextBox2.Text += ("\n" + net.serv.MessageFrom); }));
                 }
                 else
-                    richTextBox2.Text += ("\n" + MyService.MessageFrom);
+                    richTextBox2.Text += ("\n" + net.serv.MessageFrom);
             }
         }
 

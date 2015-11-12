@@ -15,9 +15,9 @@ namespace ChatWCF
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, UseSynchronizationContext = false)]
     public class MyService : IMyService
     {
-        public static string MessageFrom;
-        public static List<string> Clients = new List<string>();
-        public static AutoResetEvent Reset = new AutoResetEvent(false);      
+        public string MessageFrom;
+        public List<string> Clients = new List<string>();
+        public AutoResetEvent Reset = new AutoResetEvent(false);      
 
         public List<string> GetAllData()
         {
