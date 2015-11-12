@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
-using System.Windows.Forms;
 using System.Data;
+using System.Drawing;
 
 namespace Filters
 {
@@ -31,11 +31,10 @@ namespace Filters
 
         int idim;
         int dim;
-        public bool err = false;
 
         public bool IsAlive = false;
         public int Progress = 0;
-        public MyBitmap Image;
+        public Bitmap Image;
 
         public int iDim
         {
@@ -68,10 +67,10 @@ namespace Filters
             autoreset.WaitOne();
         }
 
-        public void Filter(int index, string AddressWrite, AutoResetEvent autoreset)
+        public void Filter(int index, AutoResetEvent autoreset)
         {
             IsAlive = true;
-            MyBitmap newImage = Image;
+            Bitmap newImage = Image;
 
             switch (index)
             {
@@ -79,11 +78,17 @@ namespace Filters
                     {
                         iDim = 1;
                         Dim = 3;
-                        for (int i = 0; i < Image.Height; i++)
+                        for (int i = 0; i < Image.Width; i++)
                         {
-                            for (int j = 0; j < Image.Width; j++)
+                            for (int j = 0; j < Image.Height; j++)
                             {
-                                Mean(i, j, Image, newImage);
+                                if (IsAlive)
+                                    Mean(i, j, Image, newImage);
+                                else
+                                {
+                                    autoreset.Set();
+                                    return;
+                                }
                             }
                             ProgressIncr(autoreset);
                         };
@@ -94,11 +99,17 @@ namespace Filters
                     {
                         iDim = 0;
                         Dim = 5;
-                        for (int i = 0; i < Image.Height; i++)
+                        for (int i = 0; i < Image.Width; i++)
                         {
-                            for (int j = 0; j < Image.Width; j++)
+                            for (int j = 0; j < Image.Height; j++)
                             {
-                                Mean(i, j, Image, newImage);
+                                if (IsAlive)
+                                    Mean(i, j, Image, newImage);
+                                else
+                                {
+                                    autoreset.Set();
+                                    return;
+                                }
                             }
                             ProgressIncr(autoreset);
                         };
@@ -119,11 +130,17 @@ namespace Filters
 
                 case 5:
                     {
-                        for (int i = 0; i < Image.Height; i++)
+                        for (int i = 0; i < Image.Width; i++)
                         {
-                            for (int j = 0; j < Image.Width; j++)
+                            for (int j = 0; j < Image.Height; j++)
                             {
-                                GrayScale(i, j, Image, newImage);
+                                if (IsAlive)
+                                    GrayScale(i, j, Image, newImage);
+                                else
+                                {
+                                    autoreset.Set();
+                                    return;
+                                }
                             }
                             ProgressIncr(autoreset);
                         }
@@ -131,126 +148,29 @@ namespace Filters
                     }
                 case 6:
                     {
-                        for (int i = 0; i < Image.Height; i++)
+                        for (int i = 0; i < Image.Width; i++)
                         {
-                            for (int j = 0; j < Image.Width; j++)
+                            for (int j = 0; j < Image.Height; j++)
                             {
-                                GaussianBlur(i, j, Image, newImage);
+                                if (IsAlive)
+                                    GaussianBlur(i, j, Image, newImage);
+                                else
+                                {
+                                    autoreset.Set();
+                                    return;
+                                }
                             }
                             ProgressIncr(autoreset);
                         }
                         break;
                     }
             }
-            WriteImage(AddressWrite, newImage, autoreset);
+            Image = newImage;
             IsAlive = false;
             autoreset.Set();
         }
 
-        public MyBitmap ReadImage(string path)
-        {
-            try
-            {
-                MyBitmap Image = new MyBitmap();
-                FileStream f = new FileStream(path, FileMode.Open, FileAccess.Read);
-                BinaryReader br = new BinaryReader(f);
-
-                Image.iType = br.ReadUInt16();
-                Image.Size = br.ReadUInt32();
-                Image.Reserved1 = br.ReadUInt16();
-                Image.Reserved2 = br.ReadUInt16();
-                Image.OffBits = br.ReadUInt32();
-
-                Image.ISize = br.ReadUInt32();
-                Image.Width = br.ReadInt32();
-                Image.Height = br.ReadInt32();
-                Image.Planes = br.ReadUInt16();
-                Image.BitCount = br.ReadUInt16();
-                Image.Compression = br.ReadUInt32();
-                Image.SizeImage = br.ReadUInt32();
-                Image.XPixForMtr = br.ReadInt32();
-                Image.YPixForMtp = br.ReadInt32();
-                Image.CtlUsed = br.ReadUInt32();
-                Image.ClrImportant = br.ReadUInt32();
-
-                Image.colors = new MyBitmap.tagRGBQUAD[Image.Height, Image.Width];
-
-                for (int i = 0; i < Image.Height; i++)
-                {
-                    for (int j = 0; j < Image.Width; j++)
-                    {
-                        Image.colors[i, j].rgbRed = br.ReadByte();
-                        Image.colors[i, j].rgbGreen = br.ReadByte();
-                        Image.colors[i, j].rgbBlue = br.ReadByte();
-                    }
-                    f.Seek(Image.Width % 4, SeekOrigin.Current);
-                }
-
-                br.Close();
-
-                return Image;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private void WriteImage(string path, MyBitmap newImage, AutoResetEvent autoreset)
-        {
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(path);
-                FileInfo f2 = new FileInfo(path);
-                BinaryWriter bw = new BinaryWriter(f2.OpenWrite());
-
-                bw.Write(newImage.iType);
-                bw.Write(newImage.Size);
-                bw.Write(newImage.Reserved1);
-                bw.Write(newImage.Reserved2);
-                bw.Write(newImage.OffBits);
-
-                bw.Write(newImage.ISize);
-                bw.Write(newImage.Width);
-                bw.Write(newImage.Height);
-                bw.Write(newImage.Planes);
-                bw.Write(newImage.BitCount);
-                bw.Write(newImage.Compression);
-                bw.Write(newImage.SizeImage);
-                bw.Write(newImage.XPixForMtr);
-                bw.Write(newImage.YPixForMtp);
-                bw.Write(newImage.CtlUsed);
-                bw.Write(newImage.ClrImportant);
-
-                for (int i = 0; i < newImage.Height; i++)
-                {
-                    for (int j = 0; j < newImage.Width; j++)
-                    {
-                        bw.Write(newImage.colors[i, j].rgbRed);
-                        bw.Write(newImage.colors[i, j].rgbGreen);
-                        bw.Write(newImage.colors[i, j].rgbBlue);
-                    }
-                    ProgressIncr(autoreset);
-                }
-
-                for (int i = 0; i < newImage.Width % 4; i++)
-                {
-                    bw.Write((byte)0);
-                }
-
-                bw.Close();
-                Image = newImage;
-                autoreset.Set();
-            }
-            catch (Exception)
-            {
-                IsAlive = false;
-                autoreset.Set();
-                err = true;
-            }
-        }
-
-        private void Mean(int col, int row, MyBitmap Image, MyBitmap newImage)
+        private void Mean(int col, int row, Bitmap Image, Bitmap newImage)
         {
             byte count = 0;
             int sumR = 0;
@@ -266,24 +186,23 @@ namespace Filters
                 {
                     int newX = x + j;
                     int newY = y + i;
-                    if (newX >= 0 && newY >= 0 && newX < Image.Height && newY < Image.Width)
+                    if (newX >= 0 && newY >= 0 && newX < Image.Width && newY < Image.Height)
                     {
                         count++;
-                        sumR += Image.colors[newX, newY].rgbRed;
-                        sumG += Image.colors[newX, newY].rgbGreen;
-                        sumB += Image.colors[newX, newY].rgbBlue;
+                        sumR += Image.GetPixel(newX, newY).R;
+                        sumG += Image.GetPixel(newX, newY).G; ;
+                        sumB += Image.GetPixel(newX, newY).B; ;
                     }
                 }
             }
 
-            newImage.colors[col, row].rgbRed = (byte)(sumR / count);
-            newImage.colors[col, row].rgbGreen = (byte)(sumG / count);
-            newImage.colors[col, row].rgbBlue = (byte)(sumB / count);
+            newImage.SetPixel(col, row, Color.FromArgb((byte)(sumR / count), (byte)(sumG / count), (byte)(sumB / count)));
         }
 
-        private void GrayScale(int col, int row, MyBitmap Image, MyBitmap newImage)
+        private void GrayScale(int col, int row, Bitmap Image, Bitmap newImage)
         {
-            newImage.colors[col, row].rgbRed = newImage.colors[col, row].rgbGreen = newImage.colors[col, row].rgbBlue = (byte)(((byte)Image.colors[col, row].rgbRed + (byte)Image.colors[col, row].rgbGreen + (byte)Image.colors[col, row].rgbBlue) / 3);
+            byte color = (byte)(((byte)Image.GetPixel(col, row).R + (byte)Image.GetPixel(col, row).G + (byte)Image.GetPixel(col, row).B) / 3);
+            newImage.SetPixel(col, row, Color.FromArgb(color, color, color));
         }
 
         double[,] matGauss = new double[5, 5]
@@ -295,7 +214,7 @@ namespace Filters
             {0.000789, 0.006581, 0.013347, 0.006581, 0.000789},
         };
 
-        private void GaussianBlur(int col, int row, MyBitmap Image, MyBitmap newImage)
+        private void GaussianBlur(int col, int row, Bitmap Image, Bitmap newImage)
         {
             double sR = 0;
             double sG = 0;
@@ -310,18 +229,16 @@ namespace Filters
                 {
                     int newX = x + j;
                     int newY = y + i;
-                    if (newX >= 0 && newY >= 0 && newX < Image.Height && newY < Image.Width)
+                    if (newX >= 0 && newY >= 0 && newX < Image.Width && newY < Image.Height)
                     {
-                        sR += Image.colors[newX, newY].rgbRed * matGauss[i, j];
-                        sG += Image.colors[newX, newY].rgbGreen * matGauss[i, j];
-                        sB += Image.colors[newX, newY].rgbBlue * matGauss[i, j];
+                        sR += Image.GetPixel(newX, newY).R * matGauss[i, j];
+                        sG += Image.GetPixel(newX, newY).G * matGauss[i, j];
+                        sB += Image.GetPixel(newX, newY).B * matGauss[i, j];
                     }
                 }
             }
 
-            newImage.colors[col, row].rgbRed = (byte)(sR);
-            newImage.colors[col, row].rgbGreen = (byte)(sG);
-            newImage.colors[col, row].rgbBlue = (byte)(sB);
+            newImage.SetPixel(col, row, Color.FromArgb((byte)(sR), (byte)(sG), (byte)(sB)));
         }
 
         int[,] Gx = 
@@ -340,7 +257,7 @@ namespace Filters
 
         private int fil;
 
-        private void Sobel(MyBitmap Image, MyBitmap newImage, AutoResetEvent autoreset)
+        private void Sobel(Bitmap Image, Bitmap newImage, AutoResetEvent autoreset)
         {
             int[,] G = new int[3, 3];
 
@@ -359,15 +276,21 @@ namespace Filters
 
             }
 
-            int[,] BlackWhite = new int[Image.Height, Image.Width];
+            int[,] BlackWhite = new int[Image.Width, Image.Height];
 
             int sum = 0;
 
-            for (int i = 0; i < Image.Height; i++)
+            for (int i = 0; i < Image.Width; i++)
             {
-                for (int j = 0; j < Image.Width; j++)
+                for (int j = 0; j < Image.Height; j++)
                 {
-                    BlackWhite[i, j] = (Image.colors[i, j].rgbRed + Image.colors[i, j].rgbGreen + Image.colors[i, j].rgbBlue) / 3;
+                    if (IsAlive)
+                        BlackWhite[i, j] = (Image.GetPixel(i, j).R + Image.GetPixel(i, j).G + Image.GetPixel(i, j).B) / 3;
+                    else
+                    {
+                        autoreset.Set();
+                        return;
+                    }
                 }
                 if (i % 2 == 0)
                 {
@@ -375,9 +298,9 @@ namespace Filters
                 }
             }
 
-            for (int col = 0; col < Image.Height; col++)
+            for (int col = 0; col < Image.Width; col++)
             {
-                for (int row = 0; row < Image.Width; row++)
+                for (int row = 0; row < Image.Height; row++)
                 {
 
                     int y = row + offsets[1].YOffset;
@@ -387,15 +310,24 @@ namespace Filters
                     {
                         for (int j = 0; j < 3; j++)
                         {
-                            int newX = x + j;
-                            int newY = y + i;
-                            if (newX >= 0 && newY >= 0 && newX < Image.Height && newY < Image.Width)
+                            if (IsAlive)
                             {
-                                sum += BlackWhite[newX, newY] * G[i, j];
+                                int newX = x + j;
+                                int newY = y + i;
+                                if (newX >= 0 && newY >= 0 && newX < Image.Width && newY < Image.Height)
+                                {
+                                    sum += BlackWhite[newX, newY] * G[i, j];
+                                }
                             }
+                            else
+                            {
+                                autoreset.Set();
+                                return;
+                            }
+                            
                         }
                     }
-                    newImage.colors[col, row].rgbRed = newImage.colors[col, row].rgbGreen = newImage.colors[col, row].rgbBlue = (byte)(Math.Sqrt(sum * sum));
+                    newImage.SetPixel(col, row, Color.FromArgb((byte)Math.Sqrt(sum * sum), (byte)Math.Sqrt(sum * sum), (byte)Math.Sqrt(sum * sum)));
                     sum = 0;
                 }
                 if (col % 2 == 0)

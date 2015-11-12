@@ -51,7 +51,6 @@
     <Compile Include="FormFilters.Designer.cs">
       <DependentUpon>FormFilters.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyBitmap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormFilters.resx">

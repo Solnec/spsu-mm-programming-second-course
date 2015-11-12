@@ -35,6 +35,7 @@
             this.FiltersList = new System.Windows.Forms.ComboBox();
             this.FileDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFile = new System.Windows.Forms.SaveFileDialog();
+            this.SaveButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -60,9 +61,9 @@
             // Filter_Button
             // 
             this.Filter_Button.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Filter_Button.Location = new System.Drawing.Point(600, 417);
+            this.Filter_Button.Location = new System.Drawing.Point(600, 412);
             this.Filter_Button.Name = "Filter_Button";
-            this.Filter_Button.Size = new System.Drawing.Size(204, 57);
+            this.Filter_Button.Size = new System.Drawing.Size(204, 62);
             this.Filter_Button.TabIndex = 1;
             this.Filter_Button.Text = "Применить фильтр";
             this.Filter_Button.UseVisualStyleBackColor = true;
@@ -91,17 +92,28 @@
             this.FiltersList.Size = new System.Drawing.Size(186, 21);
             this.FiltersList.TabIndex = 3;
             this.FiltersList.Text = "Выберите фильтр";
-            this.FiltersList.SelectedIndexChanged += new System.EventHandler(this.FiltersList_SelectedIndexChanged);
             // 
             // FileDialog
             // 
             this.FileDialog.FileName = "openFileDialog1";
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.SaveButton.Location = new System.Drawing.Point(600, 344);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(204, 62);
+            this.SaveButton.TabIndex = 4;
+            this.SaveButton.Text = "Cохранить картинку";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // FormFilters
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(832, 512);
+            this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.FiltersList);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.Filter_Button);
@@ -123,6 +135,7 @@
         private System.Windows.Forms.ComboBox FiltersList;
         private System.Windows.Forms.OpenFileDialog FileDialog;
         private System.Windows.Forms.SaveFileDialog saveFile;
+        private System.Windows.Forms.Button SaveButton;
     }
 }
 

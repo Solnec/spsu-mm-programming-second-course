@@ -18,6 +18,7 @@ namespace Filters
         Thread thread, thread1;
         string AddressWrite, AddressRead;
         delegate void Proc();
+        bool IsProcess = true;
 
         Filters filter = new Filters();
         AutoResetEvent autoreset = new AutoResetEvent(false);
@@ -27,113 +28,131 @@ namespace Filters
             InitializeComponent();
         }
 
+        private void ResetThreads()
+        {
+            progressBar1.Value = newValue = filter.Progress = 0;
+            if ((filter.IsAlive) && (thread != null) && (thread1 != null))
+            {
+                autoreset.Reset();
+                filter.IsAlive = false;
+                IsProcess = false;
+            }
+        }
+
         private void LoadImage(string AddressRead)
         {
-            if (AddressRead == "")
+            try
             {
-                MessageBox.Show("ERROR :( PLease, try again!!!");
+                filter.Image = new Bitmap(AddressRead);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка при считывании файла");
                 return;
             }
 
-            filter.Image = filter.ReadImage(AddressRead);
-            if (filter.Image == null)
-            {
-                MessageBox.Show("Ошибка при считывании картинки");
-                return;
-            }
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox.Load(AddressRead);
+            pictureBox.Image = filter.Image;
         }
 
         private void Load_Button_Click(object sender, EventArgs e)
         {
-            autoreset.Reset();
-            progressBar1.Value = newValue = 0;
+            ResetThreads();
+            
             FileDialog.Filter = "Изображения |*.bmp";
             FileDialog.FileName = "";
             FileDialog.ShowDialog();
 
             AddressRead = FileDialog.FileName;
 
-            Thread load = new Thread(delegate() { LoadImage(AddressRead); });
-            load.Start();
-            load.IsBackground = true;
+            thread = new Thread(delegate() { LoadImage(AddressRead); });
+            thread.Start();
+            thread.IsBackground = true;
         }
 
         private void Filter_Button_Click(object sender, EventArgs e)
         {
-            autoreset.Reset();
+            ResetThreads();
+            filter.Image = new Bitmap(pictureBox.Image);
+
+            int index = FiltersList.SelectedIndex + 1;
+            if ((index == 0) || (filter.Image == null))
+            {
+                MessageBox.Show("ERROR! PLease, try again!!!");
+                return;
+            }
+
+            int Max = progressBar1.Maximum;
+            int Width = filter.Image.Width;
+
+            thread = new Thread(delegate() { filter.Filter(index, autoreset); });
+            thread.IsBackground = true;
+            thread.Start();
+
+            thread1 = new Thread(delegate() { Process(Max, Width); });
+            thread1.IsBackground = true;
+            thread1.Start();
+
+            IsProcess = true;
+        }
+
+        private void Process(int Max, int Width)
+        {
+            newValue = filter.Progress = 0;
+            try
+            {
+                do
+                {
+                    autoreset.WaitOne();
+                    newValue = Max * filter.Progress / Width;
+
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new Proc(delegate() { progressBar1.Value = newValue; }));
+                    }
+                    else
+                        progressBar1.Value = newValue;
+
+                    autoreset.Set();
+                }
+                while (filter.IsAlive);
+
+                autoreset.WaitOne();
+                if (IsProcess)
+                {
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new Proc(delegate() { pictureBox.Image = filter.Image; }));
+                    }
+                    else
+                        pictureBox.Image = filter.Image;
+                }
+            }
+
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            if ((filter.Image == null) || (filter.IsAlive))
+                return;
+
             saveFile.Filter = "Изображения |*.bmp";
             saveFile.FileName = null;
-            progressBar1.Value = newValue = filter.Progress = 0;
-            int index = FiltersList.SelectedIndex + 1;
 
             saveFile.ShowDialog();
             AddressWrite = saveFile.InitialDirectory + saveFile.FileName;
-            int Max = progressBar1.Maximum;
 
-            if ((index < 0) || (filter.Image == null) || (AddressRead == saveFile.InitialDirectory + saveFile.FileName))
+            if ((AddressRead == saveFile.InitialDirectory + saveFile.FileName) || (AddressWrite == ""))
             {
-                MessageBox.Show("ERROR :( PLease, try again!!!");
+                MessageBox.Show("ERROR! PLease, try again!!!");
                 return;
             }
 
-            thread = new Thread(delegate() { filter.Filter(index, AddressWrite, autoreset); });
-            thread.Start();
-            thread.IsBackground = true;
-
-            thread1 = new Thread(delegate() { Process(Max); });
-            thread1.Start();
-            thread.IsBackground = true;
-        }
-
-        private void FiltersList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            progressBar1.Value = newValue = filter.Progress = 0;
-        }
-
-        private void Process(int Max)
-        {
-            do
-            {
-                newValue = Max * filter.Progress / (filter.Image.Height * 2);
-
-                autoreset.WaitOne();
-
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Proc(delegate() { this.progressBar1.Value = newValue; }));
-                }
-                else
-                    this.progressBar1.Value = newValue;
-
-                autoreset.Set();
-            }
-            while ((filter.IsAlive) || (newValue < Max));
-
-            autoreset.WaitOne();
-
-            if (filter.err)
-            {
-                MessageBox.Show("Ошибка записи");
-                return;
-            }
-
-            try
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Proc(delegate() { this.pictureBox.Load(AddressWrite); }));
-                }
-                else
-                    this.pictureBox.Load(AddressWrite);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Ошибка вывода");
-                return;
-            }
-
+            filter.Image.Save(AddressWrite);
         }
     }
 }
