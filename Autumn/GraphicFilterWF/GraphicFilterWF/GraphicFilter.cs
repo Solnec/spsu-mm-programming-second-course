@@ -8,17 +8,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Timer = System.Threading.Timer;
 
 namespace GraphicFilterWF
 {
     public partial class GraphicFilter : Form
     {
         FilterModel model = new FilterModel();
+        private Timer _progress;
         public GraphicFilter()
         {
             InitializeComponent();
             cmbFilters.DataSource = model.FilterList;
             model.Filter = (FilterModel.Filters)cmbFilters.SelectedIndex;
+
         }
 
         private void cmbFilters_SelectedIndexChanged(object sender, EventArgs e)
@@ -26,7 +29,7 @@ namespace GraphicFilterWF
             model.Filter = (FilterModel.Filters)cmbFilters.SelectedIndex;
         }
 
-        private async void btnLoad_Click(object sender, EventArgs e)
+        private void btnLoad_Click(object sender, EventArgs e)
         {
             openFileDialog.ShowDialog();
             model.InPath = openFileDialog.FileName;
@@ -34,31 +37,32 @@ namespace GraphicFilterWF
             pictureBox.Image = model.OldImage();
         }
 
+        private Thread _t;
         private void btnApply_Click(object sender, EventArgs e)
         {
-            progressBar.Maximum = model.Size;
+            if (_progress != null)
+                _progress.Dispose();
+            model.Update();
             progressBar.Value = 0;
-            Thread t = new Thread(model.Apply);
-            t.Start();
-            Thread t2 = new Thread(ShowProgress);
-            t2.Start();
+            progressBar.Maximum = model.Size;
+            _t = new Thread(model.Apply);
+            _t.Start();
+            _progress = new Timer(ShowProgress, null, 10, 20);
+            Thread showImage = new Thread(ShowImage);
+            showImage.Start();
         }
 
         private void ShowImage()
         {
+            model.Mut.WaitOne();
             pictureBox.Image = model.NewImage();
+            model.Mut.ReleaseMutex();
+            _progress.Dispose();
         }
 
-        private void ShowProgress()
+        private void ShowProgress(object state)
         {
-            model.Mut.WaitOne();
-            while (progressBar.Value != progressBar.Maximum)
-            {
-                this.Invoke(new ThreadStart(delegate { progressBar.Value = model.Progress(); }));
-                Thread.Sleep(0);
-            }
-            ShowImage();
-            model.Mut.ReleaseMutex();
+            this.Invoke(new ThreadStart(delegate { progressBar.Value = model.Progress(); }));
         }
 
         private void bntSave_Click(object sender, EventArgs e)

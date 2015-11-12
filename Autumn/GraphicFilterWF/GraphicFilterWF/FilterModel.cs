@@ -103,17 +103,24 @@ namespace GraphicFilterWF
             Size = _myImage.Height * _myImage.Width;
         }
 
-
+        public void Update()
+        {
+            TryChangeFilter(Filter, out _filter);
+        }
         public void Apply()
         {
             Mut.WaitOne();
             if (!TryChangeFilter(Filter, out _filter))
+            {
+                Mut.ReleaseMutex();
                 return;
-            Mut.ReleaseMutex();
+            }
+
             if (_filter != null)
             {
                 _newImage = _filter.ApplyFilter(_myImage);
             }
+            Mut.ReleaseMutex();
         }
 
         public void Save()
