@@ -116,12 +116,20 @@ namespace GraphicFilterWF
                 return;
             }
 
-            if (_filter != null)
+            try
             {
-                _newImage = _filter.ApplyFilter(_myImage);
+                if (_filter != null)
+                {
+                    _newImage = _filter.ApplyFilter(_myImage);
+                }
+                if (EndOfApply != null)
+                    EndOfApply();
             }
-            if (EndOfApply != null)
-                EndOfApply();
+            catch (ThreadAbortException)
+            {
+                Thread.ResetAbort();
+            }
+            
         }
 
         public void Save()
