@@ -12,6 +12,7 @@ namespace GraphicFilterWF
     {
         private Bitmap _myImage = null;
         private Bitmap _newImage = null;
+        public event Action EndOfApply;
 
         public Bitmap OldImage()
         {
@@ -24,7 +25,8 @@ namespace GraphicFilterWF
         }
 
         private IFilter _filter = null;
-        public Mutex Mut = new Mutex();
+        public Mutex MutTime = new Mutex();
+        public Mutex MutShow = new Mutex();
         public int Size
         {
             get;
@@ -109,10 +111,8 @@ namespace GraphicFilterWF
         }
         public void Apply()
         {
-            Mut.WaitOne();
             if (!TryChangeFilter(Filter, out _filter))
             {
-                Mut.ReleaseMutex();
                 return;
             }
 
@@ -120,7 +120,8 @@ namespace GraphicFilterWF
             {
                 _newImage = _filter.ApplyFilter(_myImage);
             }
-            Mut.ReleaseMutex();
+            if (EndOfApply != null)
+                EndOfApply();
         }
 
         public void Save()

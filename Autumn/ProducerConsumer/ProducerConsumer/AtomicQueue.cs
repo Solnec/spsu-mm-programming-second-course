@@ -14,11 +14,12 @@ namespace ProducerConsumer
 
         public T Dequeue()
         {
-            if (_queue.Count > 0)
+            _mutex.Wait();
+            if (_queue.Count == 0)
             {
+                _mutex.Release();
                 return default(T);
             }
-            _mutex.Wait();
             T tmp = _queue.Dequeue();
             _mutex.Release();
             return tmp;

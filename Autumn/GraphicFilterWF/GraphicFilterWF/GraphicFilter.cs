@@ -21,6 +21,7 @@ namespace GraphicFilterWF
             InitializeComponent();
             cmbFilters.DataSource = model.FilterList;
             model.Filter = (FilterModel.Filters)cmbFilters.SelectedIndex;
+            model.EndOfApply += ShowImage;
 
         }
 
@@ -45,18 +46,18 @@ namespace GraphicFilterWF
             model.Update();
             progressBar.Value = 0;
             progressBar.Maximum = model.Size;
+            if (_t != null && _t.IsAlive)
+            {
+                _t.Abort();
+            }
             _t = new Thread(model.Apply);
             _t.Start();
             _progress = new Timer(ShowProgress, null, 10, 20);
-            Thread showImage = new Thread(ShowImage);
-            showImage.Start();
         }
 
         private void ShowImage()
         {
-            model.Mut.WaitOne();
             pictureBox.Image = model.NewImage();
-            model.Mut.ReleaseMutex();
             _progress.Dispose();
         }
 
