@@ -14,7 +14,7 @@ namespace ThreadPool
         Thread thread;
         int enabled;
         int Index;
-       
+
         public Doer(int i)
         {
             thread = new Thread(delegate() { ThreadFn(); });
@@ -25,50 +25,56 @@ namespace ThreadPool
 
         public int GetTaskCount()
         {
-            return QueueTasks.Count;
+            lock (QueueTasks)
+            {
+                return QueueTasks.Count;
+            }
         }
 
         public bool IsEmpty()
         {
-            if (QueueTasks.Count > 0) return false;
-            else return true;
+            if (Interlocked.Equals(QueueTasks.Count, 0)) return true;
+            else return false;
         }
 
         public void AppendEn(Action a)
         {
-            QueueTasks.Enqueue(a);
+            lock (QueueTasks)
+            {
+                QueueTasks.Enqueue(a);
+            }
             reset.Set();
         }
 
         public void Dispose()
         {
-           lock(QueueTasks)
-           {
-               while(QueueTasks.Count > 0)
-               {
-                   QueueTasks.Dequeue();
-               }
-           }
+            lock (QueueTasks)
+            {
+                while (QueueTasks.Count > 0)
+                {
+                    QueueTasks.Dequeue();
+                }
+            }
 
             Interlocked.Exchange(ref enabled, 0);
 
-            reset.Set();            
+            reset.Set();
             thread = null;
         }
 
         private void ThreadFn()
         {
             while (Interlocked.Equals(enabled, 1))
-            {                
-                if (QueueTasks.Count > 0)
+            {
+                if (!Interlocked.Equals(QueueTasks.Count, 0))
                 {
                     Action fn = QueueTasks.Dequeue();
                     Console.WriteLine("Thread[{0}] take an action", Index);
                     fn();
                     Console.WriteLine("Thread[{0}] finished an action", Index);
-                }            
+                }
                 else
-                    reset.WaitOne();    
+                    reset.WaitOne();
             }
             Console.WriteLine("Thread[{0}] finished his work", Index);
         }

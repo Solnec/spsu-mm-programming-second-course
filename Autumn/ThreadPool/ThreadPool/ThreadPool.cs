@@ -23,10 +23,10 @@ namespace ThreadPool
 
         public void Enqueue(Action a)
         {
-            getFreeWorker().AppendEn(a);
+            GetFreeWorker().AppendEn(a);
         }
 
-        private Doer getFreeWorker()
+        private Doer GetFreeWorker()
         {
             Doer freeWorker = null;
             int minTasks = Int32.MaxValue;
@@ -61,6 +61,11 @@ namespace ThreadPool
                 }
             }
             disposed = true;
+        }
+
+        ~ThreadPool()
+        {
+            Dispose(false);
         }
     }
 }
