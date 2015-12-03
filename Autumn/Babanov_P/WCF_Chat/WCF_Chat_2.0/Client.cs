@@ -16,7 +16,7 @@ namespace WCF_Chat_2._0
         public string[] Chaters = new string[1];
         public string MyAddress;
 
-        public void Work(string address, string Name)
+        public void Start(string address, string Name)
         {
             if (Chaters.GetLength(0) == 1)
             {
@@ -33,42 +33,24 @@ namespace WCF_Chat_2._0
             {
                 SortArrayOfChaters();
             }
-            
-            try
+        }
+        public void SendUsersMessage (string s)
+        {
+            for (int i = 1; i < Chaters.GetLength(0); i++)
             {
-
-                while (true)
+                try
                 {
-                    string s = Console.ReadLine();
-                    for (int i = 1; i < Chaters.GetLength(0); i++)
+                    using (ChannelFactory<IChat> cf = new ChannelFactory<IChat>(new WebHttpBinding(), Chaters[i]))
                     {
-                        try
-                        {
-                            using (ChannelFactory<IChat> cf = new ChannelFactory<IChat>(new WebHttpBinding(), Chaters[i]))
-                            {
-                                cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
-
-                                IChat channel = cf.CreateChannel();
-
-                                
-
-                                channel.SendUsersMessege(Name + ": " + s);
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            DeleteChater(i);
-                        }
+                        cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
+                        IChat channel = cf.CreateChannel();
+                        channel.SendUsersMessege(s);
                     }
-                    Thread.Sleep(500);
-
-
                 }
-            }
-            catch (CommunicationException cex)
-            {
-                Console.WriteLine("An exception occurred: {0}", cex.Message);
-
+                catch (Exception)
+                {
+                     DeleteChater(i);
+                }
             }
         }
         string[] GetAddressesArray(string[] SendingArray) //при первом подключении получаем массив адресов
@@ -88,6 +70,21 @@ namespace WCF_Chat_2._0
             }
             Array.Resize<string>(ref Chaters, Chaters.GetLength(0) - 1);
         }
+        public void DeleteChater(string address)
+        {
+            for (int i = 1; i < Chaters.GetLength(0); i++)
+            {
+                if(Chaters[i] == address)
+                {
+                    for(int j = i; j < Chaters.GetLength(0) - 1; j++)
+                    {
+                        Chaters[j] = Chaters[j + 1];
+                    }
+                    break;
+                }
+            }
+            Array.Resize<string>(ref Chaters, Chaters.GetLength(0) - 1);
+        }
         public void AddChater(string NewChater) //добавляем нового участника
         {
 
@@ -100,19 +97,20 @@ namespace WCF_Chat_2._0
             {
                 if (Chaters[i] != Chater)
                 {
-    //                try
-          //          {
+                    try
+                    {
                         using (ChannelFactory<IChat> cf = new ChannelFactory<IChat>(new WebHttpBinding(), Chaters[i]))
                         {
                             cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
                             IChat channel = cf.CreateChannel();
                             channel.SendStuffMessege(Chater);
                         }
-              //      }
-             /*       catch (Exception)
+                    }
+                    catch (Exception)
                     {
                         DeleteChater(i);
-                    */
+                    }
+                    
                 }
             }
         }
@@ -130,6 +128,25 @@ namespace WCF_Chat_2._0
                     Chaters[i] = Chaters[0];
                     Chaters[0] = MyAddress;
                     break;
+                }
+            }
+        }
+        public void SayGoodbye()
+        {
+            for (int i = 1; i < Chaters.GetLength(0); i++)
+            {
+                try
+                {
+                    using (ChannelFactory<IChat> cf = new ChannelFactory<IChat>(new WebHttpBinding(), Chaters[i]))
+                    {
+                        cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
+                        IChat channel = cf.CreateChannel();
+                        channel.Goodbye(Chaters[0]);
+                    }
+                }
+                catch (Exception)
+                {
+                    DeleteChater(i);
                 }
             }
         }

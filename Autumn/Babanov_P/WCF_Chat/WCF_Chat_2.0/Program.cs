@@ -16,8 +16,13 @@ namespace WCF_Chat_2._0
         {
             Server MyServer = new Server();
             Client MyClient = new Client();
+            Interface MyInterface = new Interface();
+            MyInterface.ItsTimeToEnd += MyClient.SayGoodbye;
             MyServer.GettingNewAddress += MyClient.GetNewAddress;
             MyServer.ConnectedNewChaterToUs += MyClient.SendingStuffMessage;
+            MyServer.GettingUsersMessage += MyInterface.WriteToConsole;
+            MyInterface.EnteredNewMessage += MyClient.SendUsersMessage;
+            MyServer.DeletingChater += MyClient.DeleteChater;
             Console.WriteLine("Enter port for getting messege");
             string MyPort = Console.ReadLine();
             String strHostName = Dns.GetHostName(); // узнаем имя компьютера
@@ -36,10 +41,13 @@ namespace WCF_Chat_2._0
             string Port = Console.ReadLine();
             Console.WriteLine("Enter your name");
             string Name = Console.ReadLine();
+            MyInterface.Name = Name;
             string Adress = "http://" + IP + ":" + Port;
-
-            MyClient.Work(Adress, Name);
-            host.Abort();
+            Console.WriteLine("For quit enter '-q'");
+            MyClient.Start(Adress, Name);
+            MyInterface.Start();
+            MyClient.SayGoodbye();
+            host.Close();
         }
     }
 }

@@ -15,19 +15,21 @@ namespace WCF_Chat_2._0
     {
 
         [OperationContract]
-        [WebInvoke]
-        void SendStuffMessege(string Chaters);
+        void SendStuffMessege(string chaters);
 
         [OperationContract]
-        [WebInvoke]
         void SendUsersMessege(string s);
 
         [OperationContract]
-        [WebInvoke]
-        string[] Hello(string GettingAddress);   
+        string[] Hello(string gettingAddress);
+
+        [OperationContract]
+        void Goodbye(string address);
     }
-    
-    
+
+
     public delegate void SendStuffMessage(string Chater);
-    public delegate string[] AddingNewChater (string Chater);
+    public delegate string[] AddingNewChater(string Chater);
+    public delegate void SendUsersMessage(string message);
+    public delegate void EndWork();
 }

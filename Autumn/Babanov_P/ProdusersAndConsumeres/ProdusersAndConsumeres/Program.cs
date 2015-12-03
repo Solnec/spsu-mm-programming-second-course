@@ -9,94 +9,101 @@ namespace ProdusersAndConsumeres
 {
     class Program
     {
-        static int AmountOfProduser = 5;
+        static int AmountOfProduser = 6;
         static int AmountOfConsumer = 6;
         static List<int> Stack;
         static Mutex Lock = new Mutex();
-        static bool Stop = false;
         static void Main(string[] args)
         {
-            Produser[] Produsers = new Produser[AmountOfProduser];
-            Consumer[] Consumers = new Consumer[AmountOfConsumer];
-            int AmountOfThreads = AmountOfConsumer + AmountOfProduser;
-            Thread[] Threads = new Thread[AmountOfThreads];
+            Produser[] produsers = new Produser[AmountOfProduser];
+            Consumer[] consumers = new Consumer[AmountOfConsumer];
+            int amountOfThreads = AmountOfConsumer + AmountOfProduser;
+            Thread[] threads = new Thread[amountOfThreads];
             Stack = new List<int>();
             for(int i = 0; i < AmountOfProduser; i++)
             {
-                Produsers[i] = new Produser();
+                produsers[i] = new Produser(i);
             }
             for(int i = 0; i<AmountOfConsumer; i++)
             {
-                Consumers[i] = new Consumer();
+                consumers[i] = new Consumer(i);
             }
             for(int i =0; i<AmountOfProduser; i++)
             {
-                Threads[i] = new Thread(Produsers[i].Work);
-                Threads[i].Start();
+                threads[i] = new Thread(produsers[i].Work);
+                threads[i].Start();
             }
-            for (int i = AmountOfProduser; i < AmountOfThreads; i++)
+            for (int i = AmountOfProduser; i < amountOfThreads; i++)
             {
-                Threads[i] = new Thread(Consumers[i - AmountOfProduser].Work);
-                Threads[i].Start();
+                threads[i] = new Thread(consumers[i - AmountOfProduser].Work);
+                threads[i].Start();
             }
-            Console.ReadLine();
-            Stop = true;
-            for(int i = 0; i<AmountOfThreads; i++)
+            
+            for(int i = 0; i<amountOfThreads; i++)
             {
-                Threads[i].Join();
+                threads[i].Join();
             }
         }
         class Produser
         {
+            Random RandomMachine;
+            public Produser(int n)
+            {
+                RandomMachine = new Random(n);
+            }
             public void Work()
             {
-                Random RandomMachine = new Random();
                 while(true)
                 {
-                    if (Stop)
+                    if (Console.KeyAvailable)
                     {
                         break;
                     }
                     
-                    int tmp = RandomMachine.Next();
+                    int tmp = RandomMachine.Next(500);
                     Lock.WaitOne();
                     Stack.Add(tmp);
                     Lock.ReleaseMutex();
                     Console.WriteLine("I get to list number {0}", tmp);
-                    int TimeSleep = 1000 + RandomMachine.Next(3000);
+                    int timeSleep = 500 + RandomMachine.Next(1500);
                     
-                    Thread.Sleep(TimeSleep);
+                    Thread.Sleep(timeSleep);
                 }
-            }
-            ~Produser()
-            {
-                Lock.Dispose();
-            }
-            
+            }           
         }
         class Consumer
         {
+            Random RandomMachine;
+
+            public Consumer(int n)
+            {
+                RandomMachine = new Random(n);
+            }
             public void Work()
             {
-                Random RandomMachine = new Random();
                 while (true)
                 {
-                    if (Stop)
+                    if (Console.KeyAvailable)
                     {
                         break;
                     }
+                    int timeSleep = 500 + RandomMachine.Next(1500);
                     Lock.WaitOne();
-                    int tmp = Stack.Last();
-                    Stack.Remove(Stack.Count - 1);
-                    Console.WriteLine("I set into list number {0}", tmp);
-                    int TimeSleep = 1000 + RandomMachine.Next(3000);
-                    Lock.ReleaseMutex();
-                    Thread.Sleep(TimeSleep);
+                    if (Stack.Count == 0)
+                    {
+                        Lock.ReleaseMutex();
+                        Thread.Sleep(timeSleep);
+                    }
+                    else
+                    {
+                        int tmp = Stack.Last();
+                        Stack.Remove(Stack.Last());
+                        Lock.ReleaseMutex();
+                        Console.WriteLine("I set into list number {0}", tmp);
+                        Thread.Sleep(timeSleep);
+                    }
+                    
                 }
-            }
-            ~Consumer()
-            {
-                Lock.Dispose();
             }
         }
     }
