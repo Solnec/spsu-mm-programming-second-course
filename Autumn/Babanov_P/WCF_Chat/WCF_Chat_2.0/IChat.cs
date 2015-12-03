@@ -22,9 +22,6 @@ namespace WCF_Chat_2._0
 
         [OperationContract]
         string[] Hello(string gettingAddress);
-
-        [OperationContract]
-        void Goodbye(string address);
     }
 
 

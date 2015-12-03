@@ -22,10 +22,6 @@ namespace WCF_Chat_2._0
             while(true)
             {
                 string s = Console.ReadLine();
-                if(s == "-q")
-                {
-                    break;                
-                }
                 EnteredNewMessage(Name + ": " + s);
                 Thread.Sleep(0);
                 
