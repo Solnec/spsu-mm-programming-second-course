@@ -34,9 +34,9 @@ namespace WCF_Chat_2._0
                 SortArrayOfChaters();
             }
         }
-        public void SendUsersMessage (string s)
+        public void SendUsersMessage(string s)
         {
-            int[] deleteChaters = new int[0];
+            List<int> deleteChaters = new List<int>();
             for (int i = 1; i < Chaters.GetLength(0); i++)
             {
                 try
@@ -50,13 +50,12 @@ namespace WCF_Chat_2._0
                 }
                 catch (Exception)
                 {
-                    Array.Resize<int>(ref deleteChaters, deleteChaters.GetLength(0) + 1);
-                    deleteChaters[deleteChaters.GetLength(0) - 1] = i;
+                    deleteChaters.Add(i);
                 }
             }
-            for (int i = 0; i<deleteChaters.GetLength(0); i++)
+            foreach(int i in deleteChaters)
             {
-                DeleteChater(deleteChaters[i]);
+                DeleteChater(i);
             }
         }
         string[] GetAddressesArray(string[] SendingArray) //при первом подключении получаем массив адресов
@@ -68,11 +67,11 @@ namespace WCF_Chat_2._0
             string[] NewArray = SendingArray;
             return NewArray;
         }
-        void DeleteChater (int i) //удаляем неответившего клиента
+        void DeleteChater(int i) //удаляем неответившего клиента
         {
-            for (int j = i; j < Chaters.GetLength(0); j++)
+            for (int j = i; j < Chaters.GetLength(0) - 1; j++)
             {
-                Chaters[i] = Chaters[i + 1];
+                Chaters[j] = Chaters[j + 1];
             }
             Array.Resize<string>(ref Chaters, Chaters.GetLength(0) - 1);
         }
@@ -84,7 +83,7 @@ namespace WCF_Chat_2._0
         }
         public void SendingStuffMessage(string Chater) //рассылаем служебное сообщение при подключении нового клиента
         {
-            int[] deleteChaters = new int[0];
+            List<int> deleteChaters = new List<int>();
             for (int i = 1; i < Chaters.GetLength(0); i++)
             {
                 if (Chaters[i] != Chater)
@@ -100,27 +99,26 @@ namespace WCF_Chat_2._0
                     }
                     catch (Exception)
                     {
-                        Array.Resize<int>(ref deleteChaters, Chaters.GetLength(0) + 1);
-                        deleteChaters[deleteChaters.GetLength(0) - 1] = i;
+                        deleteChaters.Add(i);
                     }
-                    
+
                 }
             }
-            for (int i = 0; i < deleteChaters.GetLength(0); i++)
+            foreach(int i in deleteChaters)
             {
                 DeleteChater(i);
             }
         }
-        public string[] GetNewAddress (string NewAddress) //К нам подключился новый клиент или мы получили сообщение с адресом подключившегося клиента
+        public string[] GetNewAddress(string NewAddress) //К нам подключился новый клиент или мы получили сообщение с адресом подключившегося клиента
         {
             AddChater(NewAddress);
             return this.Chaters;
         }
         void SortArrayOfChaters()
         {
-            for(int i = 1; i<Chaters.GetLength(0); i++)
+            for (int i = 1; i < Chaters.GetLength(0); i++)
             {
-                if(Chaters[i] == MyAddress)
+                if (Chaters[i] == MyAddress)
                 {
                     Chaters[i] = Chaters[0];
                     Chaters[0] = MyAddress;

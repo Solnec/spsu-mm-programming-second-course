@@ -18,7 +18,6 @@ namespace WCF_Chat_2._0
         public event AddingNewChater GettingNewAddress;
         public event SendStuffMessage ConnectedNewChaterToUs;
         public event SendUsersMessage GettingUsersMessage;
-        public event SendStuffMessage DeletingChater;
         public void SendUsersMessege(string s)
         {
             GettingUsersMessage(s);
@@ -32,10 +31,6 @@ namespace WCF_Chat_2._0
             string[] ArrayOfChaters = GettingNewAddress(GettingAddress);
             ConnectedNewChaterToUs(GettingAddress);
             return ArrayOfChaters;
-        }
-        public void Goodbye (string address)
-        {
-            DeletingChater(address);
         }
     }
 
