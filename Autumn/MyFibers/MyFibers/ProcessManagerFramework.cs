@@ -18,9 +18,9 @@ namespace ProcessManager
         //приоритетный алгоритм диспетчеризации
         public static void Switch(bool fiberFinished)
         {
+            Thread.Sleep(5);
             if (fiberFinished)
-            {
-                //Console.WriteLine("1");
+            {             
                 uint fiberId = fibers[fiberIndex];
                 Console.WriteLine("Fiber [{0}] finished working", fiberId);
                 if (fiberId != Fiber.PrimaryId)
@@ -35,9 +35,7 @@ namespace ProcessManager
                 }
             }
             else
-            {
-                //Console.WriteLine("2");
-                
+            {                
                 Random rng = new Random();
                 for (int i=0; i<processes.Count; i++)
                 {
@@ -52,20 +50,10 @@ namespace ProcessManager
                         max = i;
                     }
                 }
-                for (int i = 0; i < processes.Count; i++)
-                {
-                    //Console.WriteLine("{0}", processes[i].Priority);
-                }
-                //Console.WriteLine("max = {0}", max);
-                //Console.ReadLine();
-              
                 fiberIndex = max;
-                //fiberIndex++;
-                //fiberIndex %= fibers.Count;
             }
             if (fibers.Count > 0)
             {
-                //Console.WriteLine("3");
                 uint fiberId = fibers[fiberIndex];
                 Fiber.Switch(fiberId);
             }
@@ -77,9 +65,7 @@ namespace ProcessManager
                 {
                     Fiber.Delete(fiberId);
                 }
-                Fiber.Delete(Fiber.PrimaryId);
-                
-                //processes.Clear();
+                Fiber.Delete(Fiber.PrimaryId);               
             }
         }
 
