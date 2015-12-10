@@ -11,6 +11,7 @@ namespace ThreadPool
     {
         Doer[] workers;
         bool disposed = false;
+        object thisLock = new object();
 
         public ThreadPool(int Count)
         {
@@ -23,22 +24,33 @@ namespace ThreadPool
 
         public void Enqueue(Action a)
         {
-            GetFreeWorker().AppendEn(a);
+            lock (thisLock)
+            {
+                GetFreeWorker().AppendEn(a);
+            }
         }
 
         private Doer GetFreeWorker()
         {
             Doer freeWorker = null;
             int minTasks = Int32.MaxValue;
+            Console.WriteLine("MainThread is searching free Thread");
+
             foreach (Doer man in workers)
             {
-                if (man.IsEmpty()) return man;
+                if (man.IsEmpty())
+                {
+                    Console.WriteLine("MainThread has found empty thread. Its index = [{0}]", man.Index);
+                    return man;
+                }
                 else if (minTasks > man.GetTaskCount())
                 {
                     minTasks = man.GetTaskCount();
                     freeWorker = man;
                 }
             }
+
+            Console.WriteLine("MainThread has found one of the most free. It has {0} tasks in Stack. Its index = [{1}]", freeWorker.GetTaskCount(), freeWorker.Index);
             return freeWorker;
         }
 

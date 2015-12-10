@@ -9,11 +9,12 @@ namespace ThreadPool
 {
     class Doer
     {
-        Queue<Action> QueueTasks = new Queue<Action>();
+        Stack<Action> QueueTasks = new Stack<Action>();
         ManualResetEvent reset = new ManualResetEvent(false);
         Thread thread;
         int enabled;
-        int Index;
+        public int Index;
+        object forLock = new object();
 
         public Doer(int i)
         {
@@ -25,7 +26,7 @@ namespace ThreadPool
 
         public int GetTaskCount()
         {
-            lock (QueueTasks)
+            lock (forLock)
             {
                 return QueueTasks.Count;
             }
@@ -39,20 +40,20 @@ namespace ThreadPool
 
         public void AppendEn(Action a)
         {
-            lock (QueueTasks)
+            lock (forLock)
             {
-                QueueTasks.Enqueue(a);
+                QueueTasks.Push(a);
             }
             reset.Set();
         }
 
         public void Dispose()
         {
-            lock (QueueTasks)
+            lock(forLock)
             {
                 while (QueueTasks.Count > 0)
                 {
-                    QueueTasks.Dequeue();
+                    QueueTasks.Pop();
                 }
             }
 
@@ -68,13 +69,16 @@ namespace ThreadPool
             {
                 if (!Interlocked.Equals(QueueTasks.Count, 0))
                 {
-                    Action fn = QueueTasks.Dequeue();
-                    Console.WriteLine("Thread[{0}] take an action", Index);
+                    Action fn = QueueTasks.Peek();
+                    Console.WriteLine("Thread[{0}] begin an action", Index);
                     fn();
                     Console.WriteLine("Thread[{0}] finished an action", Index);
+                    QueueTasks.Pop();
                 }
                 else
+                {
                     reset.WaitOne();
+                }
             }
             Console.WriteLine("Thread[{0}] finished his work", Index);
         }

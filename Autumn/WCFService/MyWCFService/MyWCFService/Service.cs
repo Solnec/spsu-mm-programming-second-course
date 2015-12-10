@@ -21,7 +21,7 @@ namespace MyWCFService
                     i--;
                 }
                 A[i + 1] = key;
-            }
+            }          
             return A;
         }
     }

@@ -13,7 +13,6 @@ namespace ThreadPool
         {
             bool result = false;
             int CountThreads = 0;
-            Action someMethod;
 
             while (!result)
             {
@@ -21,20 +20,32 @@ namespace ThreadPool
                 result = Int32.TryParse(Console.ReadLine(), out CountThreads);
             }
 
-            Console.WriteLine("Number of actions is {0}", CountThreads * 3);
+            Console.WriteLine("Number of actions is {0}", CountThreads * 5);
 
             ThreadPool threadPool = new ThreadPool(CountThreads);
 
-            int i = 1;
+            Action someMethod;
+            ThreadStart AddAction = delegate()
+             {
+                 for (int i = 0; i < CountThreads; i++)
+                 {
+                     someMethod = delegate() { Action(); };
+                     threadPool.Enqueue(someMethod);
+                 }
+             };
 
             //Adding actions for ThreadPool
-            do
-            {
-                int Index = i;
-                someMethod = delegate() { Action(Index); };
-                threadPool.Enqueue(someMethod);
-                i++;
-            } while (i <= 3 * CountThreads);
+            Thread t1 = new Thread(AddAction);
+            Thread t2 = new Thread(AddAction);
+            Thread t3 = new Thread(AddAction);
+            Thread t4 = new Thread(AddAction);
+            Thread t5 = new Thread(AddAction);
+
+            t1.Start();
+            t2.Start();
+            t3.Start();
+            t4.Start();
+            t5.Start();
 
             Console.ReadKey();
 
@@ -45,18 +56,15 @@ namespace ThreadPool
             Console.ReadKey();
         }
 
-        static void Action(int A)
+        static void Action()
         {
             Random r = new Random();
             double item = r.Next(8, 25);
-
-            Console.WriteLine("Action[{0}] is added", A);
             long sum = 0;
             for (long i = 1; i <= Convert.ToInt64(Math.Pow(2.0, item)); i++)
             {
                 sum += i;
             }
-            Console.WriteLine("Action[{0}] is finished. Result = {1}", A, sum);
         }
     }
 }

@@ -11,6 +11,6 @@ namespace MyWCFService
     public interface IService
     {
         [OperationContract]
-        int[] Sort(int[] A);
+       int[] Sort(int[] A);
     }
 }
