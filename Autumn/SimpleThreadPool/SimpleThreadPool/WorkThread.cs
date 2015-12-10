@@ -10,12 +10,16 @@ namespace SimpleThreadPool
     public class WorkThread : IDisposable
     {
         private Thread _thread;
-        private int _isNotWorkedInt = 1;
-        private bool _isSucc;
         private Action _action;
         private AutoResetEvent _initAction = new AutoResetEvent(false);
         private bool _end;
         private object _lock = new object();
+        private SemaphoreSlim _countQueue;
+
+        public delegate void InitWork(int id);
+
+        private event InitWork _nextAction;
+
 
         public int Id
         {
@@ -24,22 +28,19 @@ namespace SimpleThreadPool
         }
 
 
-        public WorkThread(int id)
+        public WorkThread(int id, InitWork init, SemaphoreSlim sem)
         {
             Id = id;
+            _nextAction += init;
+            _countQueue = sem;
             _thread = new Thread(Action);
             _thread.Start();
         }
 
-        public bool InitAction(Action action)
+        public void InitAction(Action action)
         {
-            _isSucc = (Interlocked.CompareExchange(ref _isNotWorkedInt, 0, 1) == 1);
-            if (_isSucc)
-            {
                 _action = action;
                 _initAction.Set();
-            }
-            return _isSucc;
         }
 
 
@@ -47,6 +48,8 @@ namespace SimpleThreadPool
         {
             while (!_end)
             {
+                lock(_lock)
+                    if (_nextAction != null) _nextAction(Id);
                 _initAction.WaitOne();
                 lock (_lock)
                 {
@@ -57,7 +60,6 @@ namespace SimpleThreadPool
                         Console.WriteLine("Finish {0}", Id);
                     }
                 }
-                _isNotWorkedInt = 1;
             }
 
         }
@@ -67,6 +69,7 @@ namespace SimpleThreadPool
             _end = true;
             lock (_lock)
             {
+                _nextAction = null;
                 _action = null;
             }
             _initAction.Set();

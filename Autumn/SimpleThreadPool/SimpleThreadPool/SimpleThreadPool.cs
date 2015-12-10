@@ -7,49 +7,37 @@ using System.Threading.Tasks;
 
 namespace SimpleThreadPool
 {
-    public class SimpleThreadPool: IDisposable
+    public class SimpleThreadPool : IDisposable
     {
+        public int Count
+        {
+            get;
+            private set;
+        }
         private Queue<Action> _taskQueue = new Queue<Action>();
         private List<WorkThread> _workThreadList = new List<WorkThread>();
         private object _in = new object();
         private object _out = new object();
-        private Thread _primeThread;
-        private bool _isEnd;
+        private SemaphoreSlim _countQueue = new SemaphoreSlim(0);
         public SimpleThreadPool(int number)
         {
+            Count = number;
             for (int i = 0; i < number; i++)
             {
-                _workThreadList.Add(new WorkThread(i));
-            }
-            _primeThread = new Thread(Start);
-            _primeThread.Start();
-        }
-
-        private void Start()
-        {
-            while (!_isEnd)
-            {
-                InitAction();
+                _workThreadList.Add(new WorkThread(i, InitAction, _countQueue));
             }
         }
 
-        private void InitAction()
+
+
+        private void InitAction(int id)
         {
+            _countQueue.Wait();
             lock (_out)
             {
                 if (_taskQueue.Count == 0)
                     return;
-                Action tmp = _taskQueue.Dequeue();
-                while (true)
-                {
-                    foreach (var workThread in _workThreadList)
-                    {
-                        if (workThread.InitAction(tmp))
-                            return;
-                    }
-                    Thread.Sleep(0);
-                }
-
+                _workThreadList[id].InitAction(_taskQueue.Dequeue());
             }
         }
 
@@ -58,19 +46,22 @@ namespace SimpleThreadPool
             lock (_in)
             {
                 _taskQueue.Enqueue(action);
+                _countQueue.Release();
             }
         }
 
         public void Dispose()
         {
-            _isEnd = true;
-            _primeThread.Join();
+            lock (_out)
+            {
+                _taskQueue.Clear();
+                _countQueue.Release(Count);
+            }
             foreach (var workThread in _workThreadList)
             {
                 workThread.Dispose();
             }
             _workThreadList.Clear();
-            _taskQueue.Clear();
         }
     }
 }
