@@ -34,8 +34,11 @@ namespace ThreadPool
 
         public bool IsEmpty()
         {
-            if (Interlocked.Equals(QueueTasks.Count, 0)) return true;
-            else return false;
+            lock (forLock)
+            {
+                if (QueueTasks.Count == 0) return true;
+                else return false;
+            }
         }
 
         public void AppendEn(Action a)
@@ -49,7 +52,7 @@ namespace ThreadPool
 
         public void Dispose()
         {
-            lock(forLock)
+            lock (forLock)
             {
                 while (QueueTasks.Count > 0)
                 {
