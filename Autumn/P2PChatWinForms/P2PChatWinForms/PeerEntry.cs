@@ -40,6 +40,16 @@ namespace P2PChatWinForms
             Uri = new Uri(stringUri);
         }
 
+        public PeerEntry(PeerEntry Peer)
+        {
+            this.PeerName = Peer.PeerName;
+            this.ServiceProxy = Peer.ServiceProxy;
+            this.Nick = Peer.Nick;
+            this.stringUri = Peer.stringUri;
+            this.IsConnected = Peer.IsConnected;
+            this.Uri = Peer.Uri;
+        }
+
         public override string ToString()
         {
             return Nick + ": " + stringUri + ((IsConnected) ? " - connected" : " - not connected"); 

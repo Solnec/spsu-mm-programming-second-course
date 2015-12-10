@@ -19,12 +19,12 @@ namespace P2PChatWinForms
             if (args.Length == 1)
             {
                 //we are in a forked process
-                Application.Run(new Form1(args[0]));
+                Application.Run(new ChatForm(args[0]));
             }
             else
             {
                 //we are in the parent process
-                Application.Run(new Form1(""));
+                Application.Run(new ChatForm(""));
             }
         }
     }
