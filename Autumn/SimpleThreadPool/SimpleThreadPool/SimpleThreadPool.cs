@@ -16,8 +16,7 @@ namespace SimpleThreadPool
         }
         private Queue<Action> _taskQueue = new Queue<Action>();
         private List<WorkThread> _workThreadList = new List<WorkThread>();
-        private object _in = new object();
-        private object _out = new object();
+        private object _lock = new object();
         private SemaphoreSlim _countQueue = new SemaphoreSlim(0);
         public SimpleThreadPool(int number)
         {
@@ -33,7 +32,7 @@ namespace SimpleThreadPool
         private void InitAction(int id)
         {
             _countQueue.Wait();
-            lock (_out)
+            lock (_lock)
             {
                 if (_taskQueue.Count == 0)
                     return;
@@ -43,7 +42,7 @@ namespace SimpleThreadPool
 
         public void Enqueue(Action action)
         {
-            lock (_in)
+            lock (_lock)
             {
                 _taskQueue.Enqueue(action);
                 _countQueue.Release();
@@ -52,7 +51,7 @@ namespace SimpleThreadPool
 
         public void Dispose()
         {
-            lock (_out)
+            lock (_lock)
             {
                 _taskQueue.Clear();
                 _countQueue.Release(Count);

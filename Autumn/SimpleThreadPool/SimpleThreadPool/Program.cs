@@ -12,8 +12,8 @@ namespace SimpleThreadPool
     {
         static void Main(string[] args)
         {
-            SimpleThreadPool myPool = new SimpleThreadPool(10);
-            for (int i = 0; i < 10000; i++)
+            SimpleThreadPool myPool = new SimpleThreadPool(4);
+            for (int i = 0; i < 60000; i++)
             {
                 int tmp = i;
                 myPool.Enqueue(() => Work(tmp));

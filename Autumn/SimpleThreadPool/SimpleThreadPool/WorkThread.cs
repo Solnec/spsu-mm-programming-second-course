@@ -55,9 +55,7 @@ namespace SimpleThreadPool
                 {
                     if (_action != null)
                     {
-                        Console.WriteLine("Start {0}", Id);
                         _action();
-                        Console.WriteLine("Finish {0}", Id);
                     }
                 }
             }
