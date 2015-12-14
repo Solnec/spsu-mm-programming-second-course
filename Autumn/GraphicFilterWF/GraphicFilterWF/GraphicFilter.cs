@@ -38,20 +38,15 @@ namespace GraphicFilterWF
             pictureBox.Image = model.OldImage();
         }
 
-        private Thread _t;
         private void btnApply_Click(object sender, EventArgs e)
         {
+            model.Stop();
             if (_progress != null)
                 _progress.Dispose();
             model.Update();
             progressBar.Value = 0;
             progressBar.Maximum = model.Size;
-            if (_t != null && _t.IsAlive)
-            {
-                _t.Abort();
-            }
-            _t = new Thread(model.Apply);
-            _t.Start();
+            model.Start();
             _progress = new Timer(ShowProgress, null, 10, 20);
         }
 

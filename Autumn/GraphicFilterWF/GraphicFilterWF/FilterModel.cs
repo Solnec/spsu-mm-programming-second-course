@@ -12,8 +12,24 @@ namespace GraphicFilterWF
     {
         private Bitmap _myImage = null;
         private Bitmap _newImage = null;
-        public event Action EndOfApply;
+        public Action EndOfApply;
+        private AutoResetEvent _start = new AutoResetEvent(true);
+        private AutoResetEvent _stop = new AutoResetEvent(true);
 
+        private class RefBool
+        {
+            public RefBool(bool val)
+            {
+                Value = val;
+            }
+            public bool Value
+            {
+                get;
+                set;
+            }
+        }
+
+        private List<RefBool> _boolsApply = new List<RefBool>();
         public Bitmap OldImage()
         {
             return _myImage;
@@ -25,8 +41,6 @@ namespace GraphicFilterWF
         }
 
         private IFilter _filter = null;
-        public Mutex MutTime = new Mutex();
-        public Mutex MutShow = new Mutex();
         public int Size
         {
             get;
@@ -105,31 +119,47 @@ namespace GraphicFilterWF
             Size = _myImage.Height * _myImage.Width;
         }
 
+        public void Start()
+        {
+            _start.WaitOne();
+            _boolsApply.Add(new RefBool(true));
+            Thread t = new Thread(() => Apply(_boolsApply[_boolsApply.Count - 1]));
+            t.Start();
+            _stop.Set();
+        }
+
+        public void Stop()
+        {
+            _stop.WaitOne();
+            if (_boolsApply.Count != 0)
+            {
+                _boolsApply[0].Value = false;
+                _boolsApply.RemoveAt(0);
+            }
+            _start.Set();
+        }
+
         public void Update()
         {
             TryChangeFilter(Filter, out _filter);
         }
-        public void Apply()
+        private void Apply(RefBool isApply)
         {
             if (!TryChangeFilter(Filter, out _filter))
             {
                 return;
             }
 
-            try
+
+            if (_filter != null)
             {
-                if (_filter != null)
-                {
-                    _newImage = _filter.ApplyFilter(_myImage);
-                }
-                if (EndOfApply != null)
-                    EndOfApply();
+                Bitmap oldImage = new Bitmap(_myImage);
+                _newImage = _filter.ApplyFilter(oldImage);
             }
-            catch (ThreadAbortException)
-            {
-                Thread.ResetAbort();
-            }
-            
+            if (EndOfApply != null && isApply.Value)
+                EndOfApply();
+
+
         }
 
         public void Save()
