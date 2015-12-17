@@ -16,6 +16,7 @@ namespace GraphicFilterWF
     {
         FilterModel model = new FilterModel();
         private Timer _progress;
+        private object _lock = new object();
         public GraphicFilter()
         {
             InitializeComponent();
@@ -32,26 +33,42 @@ namespace GraphicFilterWF
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            openFileDialog.ShowDialog();
+
+            var result = openFileDialog.ShowDialog();
+            if (result == DialogResult.Cancel)
+                return;
+
+            if (_progress != null)
+            {
+                _progress.Dispose();
+            }
+            model.Update();
+            progressBar.Value = 0;
             model.InPath = openFileDialog.FileName;
+            model.Stop();
             model.Load();
             pictureBox.Image = model.OldImage();
         }
 
         private void btnApply_Click(object sender, EventArgs e)
         {
+
             model.Stop();
             if (_progress != null)
+            {
                 _progress.Dispose();
+            }
             model.Update();
             progressBar.Value = 0;
             progressBar.Maximum = model.Size;
             model.Start();
             _progress = new Timer(ShowProgress, null, 10, 20);
+
         }
 
         private void ShowImage()
         {
+            this.Invoke(new ThreadStart(delegate { progressBar.Value = progressBar.Maximum; }));
             pictureBox.Image = model.NewImage();
             _progress.Dispose();
         }

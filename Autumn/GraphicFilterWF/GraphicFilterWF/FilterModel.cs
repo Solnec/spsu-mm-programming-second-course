@@ -119,24 +119,36 @@ namespace GraphicFilterWF
             Size = _myImage.Height * _myImage.Width;
         }
 
+        private bool _isStart = false;
+        private bool _isStop = true;
+
         public void Start()
         {
-            _start.WaitOne();
+            if (_isStart)
+            {
+                return;
+            }
+            _isStart = true;
             _boolsApply.Add(new RefBool(true));
             Thread t = new Thread(() => Apply(_boolsApply[_boolsApply.Count - 1]));
+            t.IsBackground = true;
             t.Start();
-            _stop.Set();
+            _isStop = false;
         }
 
         public void Stop()
         {
-            _stop.WaitOne();
+            if (_isStop)
+            {
+                return;
+            }
+            _isStop = true;
             if (_boolsApply.Count != 0)
             {
                 _boolsApply[0].Value = false;
                 _boolsApply.RemoveAt(0);
             }
-            _start.Set();
+            _isStart = false;
         }
 
         public void Update()
