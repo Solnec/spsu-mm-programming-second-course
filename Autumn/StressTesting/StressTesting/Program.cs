@@ -12,6 +12,7 @@ namespace StressTesting
 {
     class Program
     {
+        private static int _count = 0;
         static void Main(string[] args)
         {
             WebServiceHost host = new WebServiceHost(typeof(SortService), new Uri("net.tcp://localhost:8000/"));
@@ -21,24 +22,42 @@ namespace StressTesting
                                     , "service");
 
             host.Open();
-
-            for (int i = 0; i < 300; i++)
+            
+            
+            while (_isWork)
             {
                 Thread t = new Thread(Test);
+                t.IsBackground = true;
                 t.Start();
             }
+
+
+            Console.WriteLine(_count);
 
             Console.ReadKey();
             host.Close();
         }
 
+        private static bool _end = false;
+        private static bool _isWork = true;
         static void Test()
         {
-            var cf = new ChannelFactory<ISortService>(new NetTcpBinding(SecurityMode.None), new EndpointAddress("net.tcp://localhost:8000/service"));
-            var client = cf.CreateChannel();
-            int[] array = { 9, 6, 8, 7, 3, 4, 1, 0, 5, 2, 65, 64, 12, 63, 95, 47, 19 };
-            int[] sortedArray = client.Sort(array);
-            Console.WriteLine("Succ\n" + Thread.CurrentThread.ManagedThreadId);
+            try
+            {
+                if (_end)
+                    return;
+                var cf = new ChannelFactory<ISortService>(new NetTcpBinding(SecurityMode.None), new EndpointAddress("net.tcp://localhost:8000/service"));
+                var client = cf.CreateChannel();
+                int[] array = { 9, 6, 8, 7, 3, 4, 1, 0, 5, 2, 65, 64, 12, 63, 95, 47, 19 };
+                int[] sortedArray = client.Sort(array);
+                Interlocked.Increment(ref _count);
+            }
+            catch (Exception)
+            {
+                _end = true;
+                _isWork = false;
+            }
+
         }
 
     }
