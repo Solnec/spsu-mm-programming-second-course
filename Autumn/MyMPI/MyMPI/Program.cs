@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ServiceModel;
-using MPIService;
 
-namespace MyMPI
+namespace MPIService
 {
     class Program
     {
