@@ -38,7 +38,7 @@
             // 
             // loadbutton
             // 
-            this.loadbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.loadbutton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.loadbutton.Location = new System.Drawing.Point(102, 295);
             this.loadbutton.Name = "loadbutton";
             this.loadbutton.Size = new System.Drawing.Size(141, 23);
@@ -49,7 +49,7 @@
             // 
             // filtbutton
             // 
-            this.filtbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.filtbutton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.filtbutton.Location = new System.Drawing.Point(249, 295);
             this.filtbutton.Name = "filtbutton";
             this.filtbutton.Size = new System.Drawing.Size(137, 23);
@@ -69,7 +69,7 @@
             // 
             // progressbar
             // 
-            this.progressbar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressbar.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.progressbar.Location = new System.Drawing.Point(392, 295);
             this.progressbar.Name = "progressbar";
             this.progressbar.Size = new System.Drawing.Size(313, 23);
