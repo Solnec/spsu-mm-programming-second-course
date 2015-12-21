@@ -53,6 +53,7 @@ namespace ThreadPool
                 }
                 else
                 {
+                    mutex.ReleaseMutex();
                     happening.Reset();
                     happening.WaitOne();
                 }
