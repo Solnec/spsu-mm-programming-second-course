@@ -18,8 +18,8 @@ namespace UnBlockingSynch
             this.N = N;
             for (UInt64 i = 0; i < 4; i++)
             {
+                wait[i] = true;
                 part[i] = (i + 1) * N / 4;
-                Console.WriteLine("part[{1}] = {0}", part[i], i);
             }
         }
 
