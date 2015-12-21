@@ -19,43 +19,43 @@ namespace WFFilter
         }
 
         public int flag = 0;
-        delegate void Rds();
+        delegate void Proc();
 
         public void TLoad()
         {
-            Rds rds3 = delegate() { progressBar1.Value = 0; };
+            Proc proc1 = delegate() { progressbar.Value = 0; };
             if (this.InvokeRequired)
             {
-                this.Invoke(rds3);
+                this.Invoke(proc1);
             }
             else
             {
-                progressBar1.Value = 0;
+                progressbar.Value = 0;
             }
-            string path = openFileDialog1.FileName;
-            pictureBox1.Image = Image.FromFile(path);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            string path = choiceofimage.FileName;
+            picturesbox.Image = Image.FromFile(path);
+            picturesbox.SizeMode = PictureBoxSizeMode.StretchImage;
             Interlocked.Exchange(ref flag, 0);
         }
 
         public void TFilter()
         {
             Interlocked.Exchange(ref flag, 1);
-            string path = openFileDialog1.FileName;
+            string path = choiceofimage.FileName;
             Bitmap bmp = new Bitmap(path);
             int width = bmp.Width;
             int height = bmp.Height;
 
             Bitmap greybmp = new Bitmap(bmp);
-            Rds rds = delegate() { progressBar1.Maximum = height - 1; };
+            Proc proc2 = delegate() { progressbar.Maximum = height - 1; };
            
             if (this.InvokeRequired)
             {               
-                this.Invoke(rds);
+                this.Invoke(proc2);
             }
             else
             {
-                progressBar1.Maximum = height - 1;
+                progressbar.Maximum = height - 1;
             }
 
             for (int i = 0; i < height; i++)
@@ -74,14 +74,14 @@ namespace WFFilter
 
                 if (flag == 0)
                 {
-                    Rds rds1 = delegate() { progressBar1.Value = 0; };
+                    Proc proc3 = delegate() { progressbar.Value = 0; };
                     if (this.InvokeRequired)
                     {
-                        this.Invoke(rds1);
+                        this.Invoke(proc3);
                     }
                     else
                     {
-                        progressBar1.Value = 0;
+                        progressbar.Value = 0;
                     }
                     return;
                 }
@@ -90,24 +90,24 @@ namespace WFFilter
                 {
                     try
                     {
-                        Rds rds2 = delegate() { progressBar1.Value = i; };
+                        Proc proc4 = delegate() { progressbar.Value = i; };
                         if (this.InvokeRequired)
                         {
-                            this.Invoke(rds2);
+                            this.Invoke(proc4);
                         }
                         else
                         {
-                            progressBar1.Value = i;
+                            progressbar.Value = i;
                         }
                     }
                     catch(Exception)
                     {
-                        progressBar1.Value = i;
+                        progressbar.Value = i;
                     }
                 }
             }
             if (flag == 1)
-                pictureBox1.Image = greybmp;
+                picturesbox.Image = greybmp;
             return;
         }
 
@@ -117,7 +117,7 @@ namespace WFFilter
         public Thread loadthread;
         private void loadbutton_Click(object sender, EventArgs e)
         {
-            openFileDialog1.ShowDialog();
+            choiceofimage.ShowDialog();
             loadthread = new Thread(TLoad);
             loadthread.IsBackground = true;
             loadthread.Start();
