@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace UnBlockingSynch
 {
@@ -23,14 +24,14 @@ namespace UnBlockingSynch
             }
         }
 
-        public UInt64 Result()
+        public BigInteger Result()
         {
-            UInt64 Result = 1;
-            Task<UInt64>[] t = new Task<UInt64>[4];
-            t[0] = new Task<UInt64>(OneFact);
-            t[1] = new Task<UInt64>(TwoFact);
-            t[2] = new Task<UInt64>(ThreeFact);
-            t[3] = new Task<UInt64>(FourFact);
+            BigInteger  Result = 1;
+            Task<BigInteger>[] t = new Task<BigInteger>[4];
+            t[0] = new Task<BigInteger>(OneFact);
+            t[1] = new Task<BigInteger>(TwoFact);
+            t[2] = new Task<BigInteger>(ThreeFact);
+            t[3] = new Task<BigInteger>(FourFact);
             for (int i = 0; i < 4; i++)
                 t[i].Start();
 
@@ -45,10 +46,10 @@ namespace UnBlockingSynch
             return Result;
         }
 
-        private UInt64 OneFact()
+        private BigInteger OneFact()
         {
-            UInt64 Result1 = 1;
-            for (UInt64 i = 1; i <= part[0]; i++)
+            BigInteger Result1 = 1;
+            for (BigInteger i = 1; i <= part[0]; i++)
             {
                 Result1 *= i;
             }
@@ -56,10 +57,10 @@ namespace UnBlockingSynch
             return Result1;
         }
 
-        private UInt64 TwoFact()
+        private BigInteger TwoFact()
         {
-            UInt64 Result2 = part[0] + 1;
-            for (UInt64 i = Result2 + 1; i <= part[1]; i++)
+            BigInteger Result2 = part[0] + 1;
+            for (BigInteger i = Result2 + 1; i <= part[1]; i++)
             {
                 Result2 *= i;
             }
@@ -67,10 +68,10 @@ namespace UnBlockingSynch
             return Result2;
         }
 
-        private UInt64 ThreeFact()
+        private BigInteger ThreeFact()
         {
-            UInt64 Result3 = part[1] + 1;
-            for (UInt64 i = Result3 + 1; i <= part[2]; i++)
+            BigInteger Result3 = part[1] + 1;
+            for (BigInteger i = Result3 + 1; i <= part[2]; i++)
             {
                 Result3 *= i;
             }
@@ -78,10 +79,10 @@ namespace UnBlockingSynch
             return Result3;
         }
 
-        private UInt64 FourFact()
+        private BigInteger FourFact()
         {
-            UInt64 Result4 = part[2] + 1;
-            for (UInt64 i = Result4 + 1; i <= part[3]; i++)
+            BigInteger Result4 = part[2] + 1;
+            for (BigInteger i = Result4 + 1; i <= part[3]; i++)
             {
                 Result4 *= i;
             }

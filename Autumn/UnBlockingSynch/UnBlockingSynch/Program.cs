@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace UnBlockingSynch
 {
@@ -21,7 +22,7 @@ namespace UnBlockingSynch
             }
             
             Factorial f = new Factorial(N);
-            UInt64 Factorial = f.Result();
+            BigInteger Factorial = f.Result();
             Console.WriteLine("{0}! = {1}", N, Factorial);
             Console.ReadKey();
         }
