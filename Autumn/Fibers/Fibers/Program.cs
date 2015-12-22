@@ -19,7 +19,7 @@ namespace Fibers
                 Console.WriteLine("Введите кол-во процессов");
                 result = int.TryParse(Console.ReadLine(), out N);
             }
-            
+
             ProcessManager.CurrentProccess = 0;
             for (int i = 0; i < N; i++)
             {
@@ -28,7 +28,9 @@ namespace Fibers
                 Fiber fiber = new Fiber(delegate() { process.Run(); });
                 ProcessManager.Processes.Add(process);
                 ProcessManager.Fibers.Add(fiber.Id);
+                ProcessManager.FibersForDelete.Add(fiber.Id);
             }
+
             ProcessManager.Switch(false);
             Console.ReadKey();
         }

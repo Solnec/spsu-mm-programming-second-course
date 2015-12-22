@@ -10,6 +10,7 @@ namespace Fibers
     {
         public static List<Process> Processes = new List<Process>();
         public static List<uint> Fibers = new List<uint>();
+        public static List<uint> FibersForDelete = new List<uint>();
         public static int CurrentProccess;
         static uint CurrentFiber;
 
@@ -60,55 +61,58 @@ namespace Fibers
             if (Fibers.Count > 1)
             {
                 ShiftQueue();
-                CurrentFiber = Fibers[Fibers.Count - 1];                
+                CurrentFiber = Fibers[Fibers.Count - 1];
                 Console.WriteLine("Switch on another fiber");
             }
             else
             {
-                foreach (uint f in Fibers)
+                foreach (uint f in FibersForDelete)
                 {
-                    if (f != Fiber.PrimaryId)
+                    if ((f != Fiber.PrimaryId) && (f != CurrentFiber))
+                    {
+                        Console.WriteLine("Delete fiber{0}", f);
                         Fiber.Delete(f);
+                    }
                 }
-                 Console.WriteLine("All fibers are deleted");
+                Console.WriteLine("All fibers are deleted");
                 CurrentFiber = Fiber.PrimaryId;
             }
             Fiber.Switch(CurrentFiber);
         }
 
         //Priority dispatch
-        /*public static void Switch(bool fiberFinished)
-        {
-            if (fiberFinished)
-            {
-                if (CurrentFiber != Fiber.PrimaryId)
-                {
-                    uint FiberForDelete = CurrentFiber;
-                    Fibers.Remove(FiberForDelete);
-                    Processes.Remove(Processes[CurrentProccess]);
-                    CurrentProccess = 0;
-                }
-            }
+        /*  public static void Switch(bool fiberFinished)
+         {
+             if (fiberFinished)
+             {
+                 if (CurrentFiber != Fiber.PrimaryId)
+                 {
+                     uint FiberForDelete = CurrentFiber;
+                     Fibers.Remove(FiberForDelete);
+                     Processes.Remove(Processes[CurrentProccess]);
+                     CurrentProccess = 0;
+                 }
+             }
 
-            if (Fibers.Count > 1)
-            {
-                GetMaxPriority();
-                CurrentFiber = Fibers[CurrentProccess];
-                Console.WriteLine("Switch on another fiber with priority {0}", Processes[CurrentProccess].Priority);
-            }
-            else
-            {
-                foreach (uint f in Fibers)
-                {
-                    if (f != Fiber.PrimaryId)
-                        Fiber.Delete(f);
-                }
-                Console.WriteLine("All fibers are deleted");
-                CurrentFiber = Fiber.PrimaryId;
-            }
-            Thread.Sleep(100);           
-            Fiber.Switch(CurrentFiber);
-        }*/
+             if (Fibers.Count > 1)
+             {
+                 GetMaxPriority();
+                 CurrentFiber = Fibers[CurrentProccess];
+                 Console.WriteLine("Switch on another fiber with priority {0}", Processes[CurrentProccess].Priority);
+             }
+             else
+             {
+                 foreach (uint f in Fibers)
+                 {
+                     if (f != Fiber.PrimaryId)
+                         Fiber.Delete(f);
+                 }
+                 Console.WriteLine("All fibers are deleted");
+                 CurrentFiber = Fiber.PrimaryId;
+             }
+             Thread.Sleep(100);           
+             Fiber.Switch(CurrentFiber);
+         }*/
     }
 
     public class Process
