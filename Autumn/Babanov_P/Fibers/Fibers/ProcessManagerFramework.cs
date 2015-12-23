@@ -12,8 +12,9 @@ namespace Fibers
         static List<uint> IdFinishedFibers = new List<uint>();
         static List<Process> Processes = new List<Process>();
         static int CurrentFiberId = 0;
+        static List<int> MaxPrioruty = new List<int>();
 
-        /* public static void Switch(bool fiberFinished)
+         public static void Switch(bool fiberFinished)
          {
              if(fiberFinished)
              {
@@ -27,14 +28,25 @@ namespace Fibers
                      if(IdFibers.Count > 0)
                      {
                          int max = 0;
-                     for (int i = 0; i < IdFibers.Count; i++)
-                     {
-                         if (Processes[i].Priority > max)
+                         if(MaxPrioruty.Count == 0)
                          {
-                             max = Processes[i].Priority;
-                             CurrentFiberId = i;
+                             for (int i = 0; i < IdFibers.Count; i++)
+                             {
+                                 if (Processes[i].Priority == max)
+                                 {
+                                     MaxPrioruty.Add(i);
+                                 }
+                                 if (Processes[i].Priority > max)
+                                 {
+                                     max = Processes[i].Priority;
+                                     CurrentFiberId = i;
+                                     MaxPrioruty.Clear();
+                                     MaxPrioruty.Add(i);
+                                 }
+                             }
                          }
-                     }
+                         Random rnd = new Random();
+                         CurrentFiberId = rnd.Next(MaxPrioruty.Count - 1);
                      }
                  }
              }
@@ -42,15 +54,26 @@ namespace Fibers
              {
                  if (IdFibers.Count > 0)
                  {
-                     int max = 0;
-                     for (int i = 0; i < IdFibers.Count; i++)
+                     if (MaxPrioruty.Count == 0)
                      {
-                         if (Processes[i].Priority > max)
+                         for (int i = 0; i < IdFibers.Count; i++)
                          {
-                             max = Processes[i].Priority;
-                             CurrentFiberId = i;
+                             int max = 0;
+                             if (Processes[i].Priority == max)
+                             {
+                                 MaxPrioruty.Add(i);
+                             }
+                             if (Processes[i].Priority > max)
+                             {
+                                 max = Processes[i].Priority;
+                                 CurrentFiberId = i;
+                                 MaxPrioruty.Clear();
+                                 MaxPrioruty.Add(i);
+                             }
                          }
                      }
+                     Random rnd = new Random();
+                     CurrentFiberId = rnd.Next(MaxPrioruty.Count - 1);
                  }
              }
              if(IdFibers.Count > 0)
@@ -67,8 +90,8 @@ namespace Fibers
                      Fiber.Delete(n);
                  }
                  Fiber.Delete(Fiber.PrimaryId);
-             }*/
-
+             }
+        /*
         public static void Switch(bool fiberFinished)
         {
             if(fiberFinished)
@@ -109,7 +132,7 @@ namespace Fibers
                     Fiber.Delete(n);
                 }
                 Fiber.Delete(Fiber.PrimaryId);
-            }
+            }*/
             
             // a place for fiber magic
         }
