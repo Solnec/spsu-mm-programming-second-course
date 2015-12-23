@@ -15,9 +15,9 @@ namespace Producer_Consumer
         private static int n = 5;
         private static volatile bool _shouldStop = false;
         private static Thread[] workers;
-        private static ConcurrentQueue<int> Buffer = new ConcurrentQueue<int>();
-        private static Semaphore isFully = new Semaphore(2, 2);
-        private static Semaphore isEmpty = new Semaphore(0, 2);
+        private static List<int> Buffer = new List<int>();
+        private static Semaphore mutex = new Semaphore(1, 1);
+        private static Semaphore isEmpty = new Semaphore(0, 100);
 
         static void Main(string[] args)
         {
@@ -31,15 +31,13 @@ namespace Producer_Consumer
                 workers[2 * i - 2] = producer;
                 workers[2 * i - 1] = consumer;
             }
-
-            Console.ReadKey();
+            Console.ReadKey();           
             RequestStop();
-            Thread.Sleep(500);
             Console.WriteLine();
             for (int j = 1; j <= n; j++)
             {
                 workers[2 * j - 2].Join(); Console.WriteLine(" Thread-producer {0} finished", j);
-                workers[2 * j - 2].Join(); Console.WriteLine(" Thread-producer {0} finished", j);
+                workers[2 * j - 1].Join(); Console.WriteLine(" Thread-consumer {0} finished", j);
             }
 
             Console.WriteLine("\n All threads finished working");
@@ -49,37 +47,42 @@ namespace Producer_Consumer
         private static void produce(object num)
         {
             while (!_shouldStop)
-            {
+            {                
                 Random rng = new Random(100);
                 int product = rng.Next();  
                 Console.WriteLine("Thread-producer {0} begins " + "and waits for the semaphore.", num);
-                isFully.WaitOne();
+                mutex.WaitOne();
                 count_produce++;
-                Buffer.Enqueue(product);
+                Buffer.Add(product);
                 if (count_produce % 2 == 0) Thread.Sleep(100);
                 Console.WriteLine("Thread-producer {0} releases the semaphore.", num);
+                mutex.Release();
                 isEmpty.Release();
+                Thread.Sleep(400);
             }
         }
 
         public static void consume(object num)
         {
             while (!_shouldStop)
-            {
+            {                
                 Console.WriteLine("Thread-consumer {0} begins " + "and waits for the semaphore.", num);
-                    isEmpty.WaitOne();
-                    int product;
-                    Buffer.TryDequeue(out product);
-                    count_consume++;                         
-                    if (count_consume % 2 == 0) Thread.Sleep(100);
-                    Console.WriteLine("Thread-consumer {0} begins " + "and waits for the semaphore.", num);
-                    isFully.Release();                
+                isEmpty.WaitOne();
+                mutex.WaitOne();
+                Console.WriteLine("Thread-consumer {0} захвачен семафором", num);
+                int product = Buffer[0];
+                Buffer.Remove(product);
+                count_consume++;                         
+                if (count_consume % 2 == 0) Thread.Sleep(100);
+                Console.WriteLine("Thread-consumer {0} releases the semaphore.", num);
+                mutex.Release();
+                Thread.Sleep(400);
             }
         }
 
         public static void RequestStop()
         {
-            _shouldStop = true;
+            _shouldStop = true;            
         }
     }
 }
