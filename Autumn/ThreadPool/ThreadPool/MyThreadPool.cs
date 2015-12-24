@@ -11,14 +11,9 @@ namespace ThreadPool
     {
         private int numberOfThreads;
 
-        private Thread schedulerThread;
-        private ManualResetEvent schedulerEvent;
-
         private Thread[] threads;
         private Dictionary<int, ManualResetEvent> threadsEvent;
         private List<MyTask> listOfTasks = new List<MyTask>();
-
-        private ManualResetEvent stopEvent;
         private bool isStoping;
         private object stopLock;
 
@@ -43,12 +38,6 @@ namespace ThreadPool
                 }
 
                 this.stopLock = new object();
-                this.stopEvent = new ManualResetEvent(false);
-
-                this.schedulerEvent = new ManualResetEvent(false);
-                this.schedulerThread = new Thread(StartSelectedTask) { IsBackground = true }; ;
-
-                schedulerThread.Start();
             }
         }
 
@@ -66,7 +55,6 @@ namespace ThreadPool
                     }
                     finally
                     {
-                        if (isStoping) stopEvent.Set();
                         threadsEvent[Thread.CurrentThread.ManagedThreadId].Reset();
                     }
                 }
@@ -89,38 +77,14 @@ namespace ThreadPool
             }
         }
 
-        private void StartSelectedTask()
-        {
-            while (true)
-            {
-                schedulerEvent.WaitOne();
-                
-                lock (threads)
-                {
-                    for (int i = 0; i < numberOfThreads; i++)
-                    {
-                        if (!threadsEvent[threads[i].ManagedThreadId].WaitOne(0))
-                        {
-                            threadsEvent[threads[i].ManagedThreadId].Set();
-                            break;
-                        }
-                        else continue;
-                    }
-                }
-
-                schedulerEvent.Reset();
-            }
-        }
-
-        public void AddTask(Action a)
+        private void AddTask(Action a)
         {
             lock (listOfTasks)
             {
                 MyTask newTask = new MyTask(a);
                 listOfTasks.Add(newTask);
             }
-
-            schedulerEvent.Set();
+            
         }
 
         public void Enqueue(Action a)
@@ -135,23 +99,7 @@ namespace ThreadPool
                 AddTask(a);
             }
         }
-
-        public void Stop()
-        {
-            lock (stopLock)
-            {
-                isStoping = true;
-            }
-
-            while (listOfTasks.Count > 0)
-            {
-                stopEvent.WaitOne();
-                stopEvent.Reset();
-            }
-
-            Dispose(true);
-        }
-
+        
         ~MyThreadPool()
         {
             Dispose(false);
@@ -159,6 +107,11 @@ namespace ThreadPool
 
         public void Dispose()
         {
+            lock (stopLock)
+            {
+                isStoping = true;
+            }
+
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -169,9 +122,6 @@ namespace ThreadPool
             {
                 if (disp)
                 {
-                    schedulerThread.Abort();
-                    schedulerEvent.Dispose();
-
                     for (int i = 0; i < numberOfThreads; i++) 
                     {
                         threads[i].Abort();
@@ -179,7 +129,7 @@ namespace ThreadPool
                     }
                 }
             }
-            Console.WriteLine("All threads was disposed");
+            Console.WriteLine("All threads was disposed.");
             isDisposed = true;
         }
     }
