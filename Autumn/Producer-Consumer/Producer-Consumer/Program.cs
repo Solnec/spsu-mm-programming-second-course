@@ -18,6 +18,7 @@ namespace Producer_Consumer
         private static List<int> Buffer = new List<int>();
         private static Semaphore mutex = new Semaphore(1, 1);
         private static Semaphore isEmpty = new Semaphore(0, 100);
+        private static Semaphore isFull = new Semaphore(100, 100);
 
         static void Main(string[] args)
         {
@@ -51,6 +52,7 @@ namespace Producer_Consumer
                 Random rng = new Random(100);
                 int product = rng.Next();  
                 Console.WriteLine("Thread-producer {0} begins " + "and waits for the semaphore.", num);
+                isFull.WaitOne();
                 mutex.WaitOne();
                 count_produce++;
                 Buffer.Add(product);
@@ -76,6 +78,7 @@ namespace Producer_Consumer
                 if (count_consume % 2 == 0) Thread.Sleep(100);
                 Console.WriteLine("Thread-consumer {0} releases the semaphore.", num);
                 mutex.Release();
+                isFull.Release();
                 Thread.Sleep(400);
             }
         }
