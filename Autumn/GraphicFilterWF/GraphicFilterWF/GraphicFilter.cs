@@ -8,14 +8,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Timer = System.Threading.Timer;
+using Timer = System.Windows.Forms.Timer;
 
 namespace GraphicFilterWF
 {
     public partial class GraphicFilter : Form
     {
         FilterModel model = new FilterModel();
-        private Timer _progress;
+        private Timer _progress = new Timer();
         private object _lock = new object();
         public GraphicFilter()
         {
@@ -23,6 +23,8 @@ namespace GraphicFilterWF
             cmbFilters.DataSource = model.FilterList;
             model.Filter = (FilterModel.Filters)cmbFilters.SelectedIndex;
             model.EndOfApply += ShowImage;
+            _progress.Tick += ShowProgress;
+            _progress.Interval = 20;
 
         }
 
@@ -37,11 +39,7 @@ namespace GraphicFilterWF
             var result = openFileDialog.ShowDialog();
             if (result == DialogResult.Cancel)
                 return;
-
-            if (_progress != null)
-            {
-                _progress.Dispose();
-            }
+            _progress.Stop();
             model.Update();
             progressBar.Value = 0;
             model.InPath = openFileDialog.FileName;
@@ -54,15 +52,12 @@ namespace GraphicFilterWF
         {
 
             model.Stop();
-            if (_progress != null)
-            {
-                _progress.Dispose();
-            }
+            _progress.Stop();
             model.Update();
             progressBar.Value = 0;
             progressBar.Maximum = model.Size;
             model.Start();
-            _progress = new Timer(ShowProgress, null, 10, 20);
+            _progress.Start();
 
         }
 
@@ -70,12 +65,12 @@ namespace GraphicFilterWF
         {
             this.Invoke(new ThreadStart(delegate { progressBar.Value = progressBar.Maximum; }));
             pictureBox.Image = model.NewImage();
-            _progress.Dispose();
+            _progress.Stop();
         }
 
-        private void ShowProgress(object state)
+        private void ShowProgress(object sender, EventArgs e)
         {
-            this.Invoke(new ThreadStart(delegate { progressBar.Value = model.Progress(); }));
+            progressBar.Value = model.Progress();
         }
 
         private void bntSave_Click(object sender, EventArgs e)
