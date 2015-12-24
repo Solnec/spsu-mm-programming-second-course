@@ -133,7 +133,6 @@ namespace GraphicFilters
 
             for (int i = 0; i < biHeight; i++)
             {
-                //Form1.Filter.Set();
 
                 for (int j = 0; j < biWidth; j++)
                 {
@@ -144,11 +143,6 @@ namespace GraphicFilters
 
                 for (int k = 0; k < (4 - (biBitCount / 8 * biWidth) % 4) % 4; k++)
                     file.Write(true);
-
-                //CountOfIteration = i;
-
-                //Form1.Event.Set();
-                //Form1.Filter.WaitOne();
 
             }
             file.Close();

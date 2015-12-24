@@ -94,24 +94,13 @@ namespace FormFilters
                                     break;
                             }
 
-                            newImage.Write(newImage, textBox2.Text);
+                            newImage.Write(newImage, AppDomain.CurrentDomain.BaseDirectory + numberOfStarts.ToString() + ".bmp");
 
-                            Image Im = Bitmap.FromFile(textBox2.Text);
+                            Image Im = Bitmap.FromFile(AppDomain.CurrentDomain.BaseDirectory + numberOfStarts.ToString() + ".bmp");
                             pictureBox2.Size = new System.Drawing.Size(myImage.biWidth, myImage.biHeight);
                             pictureBox2.Image = Im;
                         }));
                 }));
-
-            //WriterThread = new Thread(new ThreadStart(delegate
-            //{
-            //    newImage.Write(newImage, textBox2.Text);
-            //    this.Invoke(new ThreadStart(delegate
-            //                {
-            //                    Image Im = Bitmap.FromFile(textBox2.Text);
-            //                    pictureBox2.Size = new System.Drawing.Size(myImage.biWidth, myImage.biHeight);
-            //                    pictureBox2.Image = Im;
-            //                }));
-            //}));
 
             WriterThread.Start();
 
@@ -146,7 +135,6 @@ namespace FormFilters
         private void Apply_Click(object sender, EventArgs e)
         {
             Clear();
-            textBox2.Text = AppDomain.CurrentDomain.BaseDirectory + numberOfStarts.ToString() + ".bmp";
             numberOfStarts++;
             Event.Reset();
             Filter.Reset();
