@@ -11,7 +11,7 @@ namespace ProducerConsumer
     {
         public static bool stoptime = true;
         public static List<int> ValuesList = new List<int>();
-
+        static TimeSpan waitTime = new TimeSpan(0, 0, 6);
         static void Main(string[] args)
         {       
             var pr = new Producer(ValuesList);
@@ -22,7 +22,7 @@ namespace ProducerConsumer
             consumerthread.Start();
             Console.ReadKey();
             stoptime = false;
-            producerthread.Join();
+            producerthread.Join(waitTime);
             consumerthread.Join();
             Console.WriteLine("A stop button was pushed");
         }

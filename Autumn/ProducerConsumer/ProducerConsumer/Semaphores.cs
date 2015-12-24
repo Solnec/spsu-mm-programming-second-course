@@ -9,8 +9,7 @@ namespace ProducerConsumer
 {
     class Semaphores
     {
-        public static Semaphore empty = new Semaphore(3,3);
-        public static Semaphore full = new Semaphore(0,2);
+        public static Semaphore full = new Semaphore(0,3);
         public static Semaphore access = new Semaphore(1, 3);
     }
 }

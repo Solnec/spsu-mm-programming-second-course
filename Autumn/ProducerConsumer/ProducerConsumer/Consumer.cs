@@ -27,19 +27,14 @@ namespace ProducerConsumer
                    consumernumber++;
                    Producer.producernumber = Producer.producernumber - consumernumber;
                    Producer.ValuesList.RemoveAt(Producer.producernumber);
-                if (check1 >= 2 & Producer.check >= 2)
+                if (check1 ==1 || Producer.check ==1)
                 {
-                    Thread.Sleep(3000);
+                    Thread.Sleep(300);
                     check1 = 0;
                     Producer.check = 0;
                 }
                    consumernumber--;
-                   Semaphores.access.Release();
-                try
-                {
-                    Semaphores.empty.Release();
-                }
-                catch (SemaphoreFullException) { }
+                   Semaphores.access.Release();             
             }
         }
     }

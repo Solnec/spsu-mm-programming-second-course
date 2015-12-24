@@ -22,7 +22,6 @@ namespace ProducerConsumer
             Random rnd = new Random();
             while (Program.stoptime)
             {
-                Semaphores.empty.WaitOne();               
                 Semaphores.access.WaitOne();
                 int a = rnd.Next(100);
                 producernumber++; 
